@@ -1,0 +1,25 @@
+# CMake generation dependency list for this directory.
+D:/Programare/Dependances CPP/CMake/share/cmake-3.27/Modules/BasicConfigVersion-AnyNewerVersion.cmake.in
+D:/Programare/Dependances CPP/CMake/share/cmake-3.27/Modules/CMakeFindDependencyMacro.cmake
+D:/Programare/Dependances CPP/CMake/share/cmake-3.27/Modules/CMakePackageConfigHelpers.cmake
+D:/Programare/Dependances CPP/CMake/share/cmake-3.27/Modules/WriteBasicConfigVersionFile.cmake
+D:/Programare/P3D/easycppogl/cmake/easycppoglConfig.cmake.in
+D:/Programare/P3D/easycppogl/easycppogl_src/CMakeLists.txt
+D:/Programare/dev/vcpkg/installed/x64-windows/share/assimp/assimpConfig.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/assimp/assimpConfigVersion.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/assimp/assimpTargets-debug.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/assimp/assimpTargets-release.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/assimp/assimpTargets.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/eigen3/Eigen3Config.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/eigen3/Eigen3ConfigVersion.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/eigen3/Eigen3Targets.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/glfw3/glfw3Config.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/glfw3/glfw3ConfigVersion.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/glfw3/glfw3Targets-debug.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/glfw3/glfw3Targets-release.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/glfw3/glfw3Targets.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/pugixml/pugixml-config-version.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/pugixml/pugixml-config.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/pugixml/pugixml-targets-debug.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/pugixml/pugixml-targets-release.cmake
+D:/Programare/dev/vcpkg/installed/x64-windows/share/pugixml/pugixml-targets.cmake

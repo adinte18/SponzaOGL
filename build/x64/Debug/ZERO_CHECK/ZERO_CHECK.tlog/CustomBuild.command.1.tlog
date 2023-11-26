@@ -1,0 +1,10 @@
+^D:\PROGRAMARE\P3D\EASYCPPOGL\BUILD\CMAKEFILES\0F2650DA41520DCE11B7532727552578\GENERATE.STAMP.RULE
+setlocal
+"D:\Programare\Dependances CPP\CMake\bin\cmake.exe" -SD:/Programare/P3D/easycppogl -BD:/Programare/P3D/easycppogl/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/Programare/P3D/easycppogl/build/EasyCppOGL.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

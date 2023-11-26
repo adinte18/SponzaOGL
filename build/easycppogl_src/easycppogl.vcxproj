@@ -1,0 +1,350 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F0E974FF-C02F-3407-8DC8-7EEC3514373B}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>easycppogl</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Programare\P3D\easycppogl\build\easycppogl_src\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">easycppogl.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">easycppogl_d</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Programare\P3D\easycppogl\build\easycppogl_src\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">easycppogl.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">easycppogl</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Programare\P3D\easycppogl\build\easycppogl_src\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">easycppogl.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">easycppogl</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Programare\P3D\easycppogl\build\easycppogl_src\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">easycppogl.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">easycppogl</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "D:/Programare/dev/vcpkg/installed/x64-windows/include/eigen3" /external:I "D:/Programare/dev/vcpkg/installed/x64-windows/include"</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;_USE_MATH_DEFINES;NOMINMAX;DEF_DATA_PATH=D:/Programare/P3D/easycppogl/data;DDEF_SHADERS_PATH=D:/Programare/P3D/easycppogl/easycppogl_src;GLFW_DLL;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;_USE_MATH_DEFINES;NOMINMAX;DEF_DATA_PATH=D:/Programare/P3D/easycppogl/data;DDEF_SHADERS_PATH=D:/Programare/P3D/easycppogl/easycppogl_src;GLFW_DLL;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;D:\Programare\dev\vcpkg\installed\x64-windows\include\eigen3;D:\Programare\dev\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;D:\Programare\dev\vcpkg\installed\x64-windows\include\eigen3;D:\Programare\dev\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "D:/Programare/dev/vcpkg/installed/x64-windows/include/eigen3" /external:I "D:/Programare/dev/vcpkg/installed/x64-windows/include"</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_USE_MATH_DEFINES;NOMINMAX;DEF_DATA_PATH=D:/Programare/P3D/easycppogl/data;DDEF_SHADERS_PATH=D:/Programare/P3D/easycppogl/easycppogl_src;GLFW_DLL;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_USE_MATH_DEFINES;NOMINMAX;DEF_DATA_PATH=D:/Programare/P3D/easycppogl/data;DDEF_SHADERS_PATH=D:/Programare/P3D/easycppogl/easycppogl_src;GLFW_DLL;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;D:\Programare\dev\vcpkg\installed\x64-windows\include\eigen3;D:\Programare\dev\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;D:\Programare\dev\vcpkg\installed\x64-windows\include\eigen3;D:\Programare\dev\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "D:/Programare/dev/vcpkg/installed/x64-windows/include/eigen3" /external:I "D:/Programare/dev/vcpkg/installed/x64-windows/include"</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_USE_MATH_DEFINES;NOMINMAX;DEF_DATA_PATH=D:/Programare/P3D/easycppogl/data;DDEF_SHADERS_PATH=D:/Programare/P3D/easycppogl/easycppogl_src;GLFW_DLL;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_USE_MATH_DEFINES;NOMINMAX;DEF_DATA_PATH=D:/Programare/P3D/easycppogl/data;DDEF_SHADERS_PATH=D:/Programare/P3D/easycppogl/easycppogl_src;GLFW_DLL;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;D:\Programare\dev\vcpkg\installed\x64-windows\include\eigen3;D:\Programare\dev\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;D:\Programare\dev\vcpkg\installed\x64-windows\include\eigen3;D:\Programare\dev\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "D:/Programare/dev/vcpkg/installed/x64-windows/include/eigen3" /external:I "D:/Programare/dev/vcpkg/installed/x64-windows/include"</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_USE_MATH_DEFINES;NOMINMAX;DEF_DATA_PATH=D:/Programare/P3D/easycppogl/data;DDEF_SHADERS_PATH=D:/Programare/P3D/easycppogl/easycppogl_src;GLFW_DLL;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_USE_MATH_DEFINES;NOMINMAX;DEF_DATA_PATH=D:/Programare/P3D/easycppogl/data;DDEF_SHADERS_PATH=D:/Programare/P3D/easycppogl/easycppogl_src;GLFW_DLL;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;D:\Programare\dev\vcpkg\installed\x64-windows\include\eigen3;D:\Programare\dev\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Programare\P3D\easycppogl\easycppogl_src;D:\Programare\P3D\easycppogl\easycppogl_src\..;D:\Programare\dev\vcpkg\installed\x64-windows\include\eigen3;D:\Programare\dev\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\Programare\P3D\easycppogl\easycppogl_src\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule D:/Programare/P3D/easycppogl/easycppogl_src/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"D:\Programare\Dependances CPP\CMake\bin\cmake.exe" -SD:/Programare/P3D/easycppogl -BD:/Programare/P3D/easycppogl/build --check-stamp-file D:/Programare/P3D/easycppogl/build/easycppogl_src/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\BasicConfigVersion-AnyNewerVersion.cmake.in;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\CMakeFindDependencyMacro.cmake;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\CMakePackageConfigHelpers.cmake;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\WriteBasicConfigVersionFile.cmake;D:\Programare\P3D\easycppogl\cmake\easycppoglConfig.cmake.in;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpConfig.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3Config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3ConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3Targets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3ConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-config-version.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Programare\P3D\easycppogl\build\easycppogl_src\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule D:/Programare/P3D/easycppogl/easycppogl_src/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"D:\Programare\Dependances CPP\CMake\bin\cmake.exe" -SD:/Programare/P3D/easycppogl -BD:/Programare/P3D/easycppogl/build --check-stamp-file D:/Programare/P3D/easycppogl/build/easycppogl_src/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\BasicConfigVersion-AnyNewerVersion.cmake.in;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\CMakeFindDependencyMacro.cmake;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\CMakePackageConfigHelpers.cmake;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\WriteBasicConfigVersionFile.cmake;D:\Programare\P3D\easycppogl\cmake\easycppoglConfig.cmake.in;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpConfig.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3Config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3ConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3Targets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3ConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-config-version.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Programare\P3D\easycppogl\build\easycppogl_src\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule D:/Programare/P3D/easycppogl/easycppogl_src/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"D:\Programare\Dependances CPP\CMake\bin\cmake.exe" -SD:/Programare/P3D/easycppogl -BD:/Programare/P3D/easycppogl/build --check-stamp-file D:/Programare/P3D/easycppogl/build/easycppogl_src/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\BasicConfigVersion-AnyNewerVersion.cmake.in;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\CMakeFindDependencyMacro.cmake;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\CMakePackageConfigHelpers.cmake;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\WriteBasicConfigVersionFile.cmake;D:\Programare\P3D\easycppogl\cmake\easycppoglConfig.cmake.in;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpConfig.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3Config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3ConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3Targets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3ConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-config-version.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Programare\P3D\easycppogl\build\easycppogl_src\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule D:/Programare/P3D/easycppogl/easycppogl_src/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"D:\Programare\Dependances CPP\CMake\bin\cmake.exe" -SD:/Programare/P3D/easycppogl -BD:/Programare/P3D/easycppogl/build --check-stamp-file D:/Programare/P3D/easycppogl/build/easycppogl_src/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\BasicConfigVersion-AnyNewerVersion.cmake.in;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\CMakeFindDependencyMacro.cmake;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\CMakePackageConfigHelpers.cmake;D:\Programare\Dependances CPP\CMake\share\cmake-3.27\Modules\WriteBasicConfigVersionFile.cmake;D:\Programare\P3D\easycppogl\cmake\easycppoglConfig.cmake.in;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpConfig.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\assimp\assimpTargets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3Config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3ConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\eigen3\Eigen3Targets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3ConfigVersion.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\glfw3\glfw3Targets.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-config-version.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-config.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets-debug.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets-release.cmake;D:\Programare\dev\vcpkg\installed\x64-windows\share\pugixml\pugixml-targets.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Programare\P3D\easycppogl\build\easycppogl_src\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\imconfig.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_impl_glfw.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_impl_opengl3.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_internal.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\imstb_rectpack.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\imstb_textedit.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\imstb_truetype.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\portable_file_dialogs.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\gl_eigen.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\ebo.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\vbo.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\vao.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\shader_program.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\transform_feedback.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture1d.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture2d.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture3d.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\texturecubemap.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture1darray.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture2darray.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\texturebuffer.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\fbo.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\camera.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\gl_viewer.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\mframe.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\boundingbox.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\material.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\scenegraph.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\mesh.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\mesh_assimp_importer.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\ubo.h" />
+    <ClInclude Include="D:\Programare\P3D\easycppogl\easycppogl_src\ssbo.h" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\gl3w.c" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_demo.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_draw.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_impl_glfw.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_tables.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\imgui_widgets.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\vao.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\gl_eigen.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\shader_program.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\transform_feedback.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture1d.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture2d.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture3d.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\texturecubemap.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture1darray.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\texture2darray.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\texturebuffer.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\fbo.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\camera.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\gl_viewer.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\boundingbox.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\mesh.cpp" />
+    <ClCompile Include="D:\Programare\P3D\easycppogl\easycppogl_src\mesh_assimp_importer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:\Programare\P3D\easycppogl\build\ZERO_CHECK.vcxproj">
+      <Project>{EEA0C3A5-A509-378F-AAEE-7673938B2FEE}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

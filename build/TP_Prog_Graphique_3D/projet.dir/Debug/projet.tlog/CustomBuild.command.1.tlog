@@ -1,0 +1,10 @@
+^D:\PROGRAMARE\P3D\EASYCPPOGL\TP_PROG_GRAPHIQUE_3D\CMAKELISTS.TXT
+setlocal
+"D:\Programare\Dependances CPP\CMake\bin\cmake.exe" -SD:/Programare/P3D/easycppogl -BD:/Programare/P3D/easycppogl/build --check-stamp-file D:/Programare/P3D/easycppogl/build/TP_Prog_Graphique_3D/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

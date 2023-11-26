@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Programare\P3D\easycppogl\build\CMakeFiles\49df23793ece048409ed6d31c0274bbe\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{C9B0F666-F2CA-3BCA-800D-8FC6A3B36221}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
