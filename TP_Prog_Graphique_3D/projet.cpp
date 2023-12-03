@@ -81,8 +81,8 @@ int main(int, char**)
 Viewer::Viewer()
 {
 	lightPos = EZCOGL::GLVec3(0.f, 500.f, 0.f);
-	gamma = 1.2f;
-	exposure = 0.2f;
+	gamma = 0.6f;
+	exposure = 0.4f;
 	intensity = 1.f;
 	bias = 1.f;
 }
@@ -146,12 +146,13 @@ void Viewer::draw_ogl()
 	EZCOGL::GLMat4 lProj = (EZCOGL::Transfo::ortho(radius, radius, std::max(lookDir.norm() - radius, 0.01f), lookDir.norm() + radius)).transpose();
 	EZCOGL::GLMat4 lightSpaceMatrix = lProj * lView;
 
+	glEnable(GL_DEPTH_TEST);
+
 	EZCOGL::FBO::push();
 	fbo_depth->bind();
 	
 	//Clear color buffer bit (no depth here)
 	glClear(GL_DEPTH_BUFFER_BIT);	
-	glEnable(GL_DEPTH_TEST);
 
 	shadowShader->bind();
 
@@ -162,7 +163,6 @@ void Viewer::draw_ogl()
 	{
 		sponzaRenderer[i]->draw(GL_TRIANGLES);
 	}
-	glDisable(GL_CULL_FACE);
 
 	// ***********************************
 	// SECOND PASS
@@ -178,18 +178,22 @@ void Viewer::draw_ogl()
 	// ***********************************
 	shaderPrg->bind();
 
+	const EZCOGL::GLMat4& modelSphere = EZCOGL::Transfo::translate(lightPos) * EZCOGL::Transfo::scale(100.f);
+	EZCOGL::set_uniform_value(0, modelSphere);
+	EZCOGL::set_uniform_value(3, EZCOGL::Transfo::inverse_transpose(modelSphere));
+	sphereRend->draw(GL_TRIANGLES);
+
 	// Uniforms variables send to the GPU
 	EZCOGL::set_uniform_value(0, model);
 	EZCOGL::set_uniform_value(1, view);
 	EZCOGL::set_uniform_value(2, proj);
-	EZCOGL::set_uniform_value(3, EZCOGL::Transfo::inverse_transpose(model));
+	EZCOGL::set_uniform_value(3, EZCOGL::Transfo::inverse_transpose(model * view));
 	EZCOGL::set_uniform_value(4, EZCOGL::GLVec3(intensity, intensity, intensity));
-	EZCOGL::set_uniform_value(5, EZCOGL::Transfo::sub33(model) * lightPos);
+	EZCOGL::set_uniform_value(5, EZCOGL::Transfo::sub33(model * view) * lightPos);
 	EZCOGL::set_uniform_value(10, normalMapping);
 	EZCOGL::set_uniform_value(11, gamma);
 	EZCOGL::set_uniform_value(12, exposure);
-	EZCOGL::set_uniform_value(13, lView);
-	EZCOGL::set_uniform_value(14, lProj);
+	EZCOGL::set_uniform_value(13, lightSpaceMatrix);
 	EZCOGL::set_uniform_value(15, bias);
 
 	for (int i = 0; i < nbMeshParts; ++i)
@@ -205,18 +209,9 @@ void Viewer::draw_ogl()
 		{
 			tex_normal_map[i]->bind(1);
 		}
-		sponzaRenderer[i]->draw(GL_TRIANGLES);
-
 		fbo_depth->depth_texture()->bind(2);
-
+		sponzaRenderer[i]->draw(GL_TRIANGLES);
 	}
-
-	const EZCOGL::GLMat4& modelSphere = EZCOGL::Transfo::translate(lightPos) * EZCOGL::Transfo::scale(100.f);
-	EZCOGL::set_uniform_value(0, modelSphere);
-	EZCOGL::set_uniform_value(3, EZCOGL::Transfo::inverse_transpose(modelSphere));
-	sphereRend->draw(GL_TRIANGLES);
-
-	glDisable(GL_CULL_FACE);
 }
 
 void Viewer::interface_ogl()

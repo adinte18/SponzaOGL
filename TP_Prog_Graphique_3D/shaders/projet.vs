@@ -2,7 +2,7 @@
 
 // INPUT
 layout(location = 1) in vec3 position_in;
-layout(location = 2) in vec3 normales_in; //trimise din init_ogl render(al doilea arugment e locatia normalelor)
+layout(location = 2) in vec3 normales_in;
 layout(location = 3) in vec2 tex_coord_in;
 layout(location = 4) in vec3 tangentes_in;
 
@@ -18,8 +18,7 @@ layout(location = 0) uniform mat4 uModelMatrix;
 layout(location = 1) uniform mat4 uViewMatrix;
 layout(location = 2) uniform mat4 uProjectionMatrix;
 layout(location = 3) uniform mat3 uMVnormalMatrix;
-layout(location = 13) uniform mat4 lView;
-layout(location = 14) uniform mat4 lProj;
+layout(location = 13) uniform mat4 lightSpaceMatrix;
 
 
 // MAIN PROGRAM
@@ -39,7 +38,7 @@ void main()
 	v_pos = viewPos.xyz;
 
 	//get the pos in world space
-	gl_Position = uProjectionMatrix * uViewMatrix  * vec4(v_pos, 1.0f);
+	gl_Position = uProjectionMatrix * uViewMatrix * vec4(v_pos.xyz, 1.0f);
 
-	FragPosLightSpace = lView * lProj * vec4(v_pos, 1.0);
+	FragPosLightSpace = lightSpaceMatrix * vec4(v_pos.xyz, 1.0f);
 }

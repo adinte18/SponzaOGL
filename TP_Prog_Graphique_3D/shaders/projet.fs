@@ -28,20 +28,24 @@ layout(binding = 0) uniform sampler2D uTex;
 layout(binding = 1) uniform sampler2D uNormals;
 layout(binding = 2) uniform sampler2D uShadow;
 
-float ShadowCalculation(vec4 fragPosLightSpace) {
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 lightDir, vec3 normal) {
     // perform perspective divide
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // transform to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
-    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(uShadow, projCoords.xy).r; 
-    // get depth of current fragment from light's perspective
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w * 0.5f + 0.5f;
+
+    float bias = max(0.05f * (1.f - dot(normal, lightDir)), 0.005f);
+    projCoords.z -= bias;
+
     float currentDepth = projCoords.z;
-    // check whether current frag pos is in shadow
-    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
+    float closestDepth= texture(uShadow, projCoords.xy).r;
+
+    if (currentDepth >= 0.99f) return 1.f;
+
+    float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+
+    if (projCoords.z > 1.0) shadow = 0.0f;
 
     return shadow;
-
 }
 
 // MAIN PROGRAM
@@ -64,13 +68,25 @@ void main()
 
     float diffuseTerm;
 
+	vec3 Ia = uLightIntensity * uKa;
+
     if (normalMapping){
         diffuseTerm = max(0.0, dot(normal, TBN * lightDir));
     } else diffuseTerm = max(0.0, dot(normal, lightDir)); 
 
     Id = vec3(tex) * uLightIntensity * vec3(diffuseTerm);
 
-    hdrColor += Id;
+	vec3 Is = vec3(0.0);
+    if (diffuseTerm > 0.0)
+	{
+		vec3 viewDir = normalize(-v_pos.xyz);
+		vec3 halfDir = normalize(viewDir + lightDir);
+		float specularTerm = max(0.0, pow(dot(normal, halfDir), uNs));
+		Is = uLightIntensity * uKs * vec3(specularTerm);
+		Is /= (uNs + 2.f) / (2.f * M_PI);
+	}
+
+    hdrColor = 0.3*Id + 0.3*Ia + 0.3*Is;
 
     float luminance = dot(hdrColor, vec3(0.2126, 0.7152, 0.0722));
 
@@ -79,10 +95,12 @@ void main()
 
     mappedColor = pow(mappedColor, vec3(1.0 / gamma));
 
-    // Shadow calculation
-    float shadow = ShadowCalculation(FragPosLightSpace);
 
-    vec3 shColor = (1.0 - shadow) * mappedColor;
+    // Shadow calculation
+    float shadow = ShadowCalculation(FragPosLightSpace, lightDir, normal);
+
+    float shadowIntensity = 0.8;
+    vec3 shColor = mix(mappedColor, mappedColor* (1.0 - shadow), shadowIntensity);
 
     oFragmentColor = vec4(shColor, 1.0);
 }
