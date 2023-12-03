@@ -85,7 +85,7 @@ GLViewer::GLViewer():
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 #endif
 
-	window_ = glfwCreateWindow(720, 720, "EOGL", nullptr, nullptr);
+	window_ = glfwCreateWindow(3840, 2400, "EOGL", nullptr, nullptr);
 	if (window_ == nullptr)
 	{
 		std::cerr << "Failed to create Window!" << std::endl;

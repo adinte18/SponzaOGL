@@ -1,4 +1,4 @@
-﻿/*******************************************************************************
+/*******************************************************************************
 * EasyCppOGL:   Copyright (C) 2019,                                            *
 * Sylvain Thery, IGG Group, ICube, University of Strasbourg, France            *
 *                                                                              *
@@ -347,12 +347,12 @@ Mesh::SP Mesh::Cube()
 	m->bb_->add_point(GLVec3(V,V,V));
 
 	m->vertices_ = GLVVec3{
-			{v,v,v}, {V,v,v}, {V,V,v}, {v,V,v},
-			{v,v,V}, {V,v,V}, {V,V,V}, {v,V,V},
-			{v,v,V}, {v,v,v}, {v,V,v}, {v,V,V},
-			{V,v,V}, {V,v,v}, {V,V,v}, {V,V,V},
-			{v,v,V}, {V,v,V}, {V,v,v}, {v,v,v},
-			{v,V,V}, {V,V,V}, {V,V,v}, {v,V,v}};
+			{v,v,v}, {V,v,v}, {V,V,v}, {v,V,v},		// Back
+			{v,v,V}, {V,v,V}, {V,V,V}, {v,V,V},		// Front
+			{v,v,V}, {v,v,v}, {v,V,v}, {v,V,V},		// Left
+			{V,v,V}, {V,v,v}, {V,V,v}, {V,V,V},		// Right
+			{v,v,V}, {V,v,V}, {V,v,v}, {v,v,v},		// Bottom
+			{v,V,V}, {V,V,V}, {V,V,v}, {v,V,v}};	// Top
 
 	m->normals_ = GLVVec3{
 			{0,0,-1}, {0,0,-1},{0,0,-1},{0,0,-1},
@@ -373,6 +373,42 @@ Mesh::SP Mesh::Cube()
 	m->tri_indices_ = std::vector<GLuint>{0,3,2,0,2,1, 4,5,6,4,6,7, 8,11,10,8,10,9, 12,13,14,12,14,15, 16,19,18,16,18,17, 20,21,22,20,22,23};
 	m->line_indices_ = std::vector<GLuint>{0,1,1,2,2,3,3,0, 4,5,5,6,6,7,7,4, 0,4,1,5,2,6,3,7};
 
+	// JS ADD ==========================================================================================================
+	m->tangents_ = GLVVec3{
+		{-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f},		// Back
+		{+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f},		// Front
+		{0.0f, 0.0f, +1.0f}, {0.0f, 0.0f, +1.0f}, {0.0f, 0.0f, +1.0f}, {0.0f, 0.0f, +1.0f},		// Left
+		{0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f},		// Right
+		{+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f},		// Bottom
+		{+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}};	// Top
+	// m->tangents_.reserve(m->vertices_.size());
+	// int size = m->tangents_.size();
+	// for(int i = 0; i < size; ++i)
+	// {
+	// 	// vertices of the triangle
+	// 	GLVec3 v0 = m->vertices_[i];
+	// 	GLVec3 v1 = m->vertices_[i+1];
+	// 	GLVec3 v2 = m->vertices_[i+2];
+	// 	// tex coords of the triangle
+	// 	GLVec2 uv0 = m->tex_coords_[i];
+	// 	GLVec2 uv1 = m->tex_coords_[i+1];
+	// 	GLVec2 uv2 = m->tex_coords_[i+2];
+
+	// 	// Edges of the triangle : position delta
+    //     GLVec3 e1 = v1 - v0;
+    //     GLVec3 e2 = v2 - v0;
+
+	// 	// UV delta
+    //     GLVec2 deltaUV1 = uv1 - uv0; // deltaUV1.x -> deltaU1 -- deltaUV1.y -> deltaV1
+    //     GLVec2 deltaUV2 = uv2 - uv0; // deltaUV2.x -> deltaU2 -- deltaUV2.y -> deltaV2
+	// 	float r = 1.f / (deltaUV1[0] * deltaUV2[1] - deltaUV1[1] * deltaUV2[0]);
+	// 	GLVec3 tangent = GLVec3((deltaUV2[1] * e1[0] - deltaUV1[1] * e2[0]) * r,
+	// 							(deltaUV2[1] * e1[1] - deltaUV1[1] * e2[1]) * r,
+	// 							(deltaUV2[1] * e1[2] - deltaUV1[1] * e2[2]) * r);
+	// 	m->tangents_.push_back(tangent);
+	// }
+	// =================================================================================================================
+	
 	return m;
 }
 
@@ -388,12 +424,12 @@ Mesh::SP Mesh::CornelBox()
 	m->bb_->add_point(GLVec3(V,V,V));
 
 	m->vertices_ = GLVVec3{
-			{v,v,v}, {V,v,v}, {V,V,v}, {v,V,v},
-			{v,v,V}, {V,v,V}, {V,V,V}, {v,V,V},
-			{v,v,V}, {v,v,v}, {v,V,v}, {v,V,V},
-			{V,v,V}, {V,v,v}, {V,V,v}, {V,V,V},
-			{v,v,V}, {V,v,V}, {V,v,v}, {v,v,v},
-			{v,V,V}, {V,V,V}, {V,V,v}, {v,V,v}};
+			{v,v,v}, {V,v,v}, {V,V,v}, {v,V,v},		// Back
+			{v,v,V}, {V,v,V}, {V,V,V}, {v,V,V},		// Front(NOT USED)
+			{v,v,V}, {v,v,v}, {v,V,v}, {v,V,V},		// Left
+			{V,v,V}, {V,v,v}, {V,V,v}, {V,V,V},		// Right
+			{v,v,V}, {V,v,V}, {V,v,v}, {v,v,v},		// Bottom
+			{v,V,V}, {V,V,V}, {V,V,v}, {v,V,v}};	// Top
 
 	m->normals_ = GLVVec3{
 			{0,0,-1}, {0,0,-1},{0,0,-1},{0,0,-1},
@@ -413,6 +449,14 @@ Mesh::SP Mesh::CornelBox()
 
 	m->tri_indices_ = std::vector<GLuint>{0,3,2,0,2,1, 8,11,10,8,10,9, 12,13,14,12,14,15, 16,19,18,16,18,17, 20,21,22,20,22,23};
 	m->line_indices_ = std::vector<GLuint>{0,1,1,2,2,3,3,0, 4,5,5,6,6,7,7,4, 0,4,1,5,2,6,3,7};
+
+	m->tangents_ = GLVVec3{
+		{-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f},		// Back
+		{+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f},		// Front(NOT USED)
+		{0.0f, 0.0f, +1.0f}, {0.0f, 0.0f, +1.0f}, {0.0f, 0.0f, +1.0f}, {0.0f, 0.0f, +1.0f},		// Left
+		{0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f},		// Right
+		{+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f},		// Bottom
+		{+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}, {+1.0f, 0.0f, 0.0f}};	// Top
 
 	return m;
 }

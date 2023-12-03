@@ -142,7 +142,7 @@ FBO_DepthTexture::FBO_DepthTexture(const std::vector<Texture2D::SP>& textures, T
 	}
 	else
 	{
-		depth_tex_ = Texture2D::create({GL_NEAREST});
+		depth_tex_ = Texture2D::create({GL_NEAREST, GL_CLAMP_TO_EDGE});
 		depth_tex_->init(GL_DEPTH_COMPONENT32F);
 	}
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_tex_->id(), 0);

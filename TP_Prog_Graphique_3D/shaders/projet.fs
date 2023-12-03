@@ -7,6 +7,7 @@ in vec3 v_pos;
 in vec3 v_norm;
 in vec2 tex_coord;
 in mat3 TBN; 
+in vec4 FragPosLightSpace;
 
 // OUTPUT
 out vec4 oFragmentColor;
@@ -21,11 +22,27 @@ layout(location = 9) uniform float uNs;
 layout(location = 10) uniform bool normalMapping;
 layout (location = 11) uniform float gamma;
 layout (location = 12) uniform float exposure;
-
+layout (location = 15) uniform float biasMax;
 
 layout(binding = 0) uniform sampler2D uTex;
 layout(binding = 1) uniform sampler2D uNormals;
+layout(binding = 2) uniform sampler2D uShadow;
 
+float ShadowCalculation(vec4 fragPosLightSpace) {
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(uShadow, projCoords.xy).r; 
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // check whether current frag pos is in shadow
+    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+
+    return shadow;
+
+}
 
 // MAIN PROGRAM
 void main()
@@ -34,8 +51,8 @@ void main()
     vec4 tex = texture(uTex, tex_coord);
     vec3 normalTex = texture(uNormals, tex_coord).xyz;
 
-    vec3 Id = vec3(0.f);
-    vec3 hdrColor = vec3(0.f);
+    vec3 Id = vec3(0.0);
+    vec3 hdrColor = vec3(0.0);
 
     if (normalMapping){
         normal = normalize(normalTex * 2.0 - 1.0);
@@ -48,19 +65,24 @@ void main()
     float diffuseTerm;
 
     if (normalMapping){
-        diffuseTerm = max(0.f, dot(normal, TBN * lightDir));
-    } else diffuseTerm = max(0.f, dot(normal, lightDir)); 
+        diffuseTerm = max(0.0, dot(normal, TBN * lightDir));
+    } else diffuseTerm = max(0.0, dot(normal, lightDir)); 
 
     Id = vec3(tex) * uLightIntensity * vec3(diffuseTerm);
 
     hdrColor += Id;
 
-    // Gamma correction and tonemapping
-    hdrColor.x = pow(hdrColor.x, 1.f / gamma);
-    hdrColor.y = pow(hdrColor.y, 1.f / gamma);
-    hdrColor.z = pow(hdrColor.z, 1.f / gamma);
+    float luminance = dot(hdrColor, vec3(0.2126, 0.7152, 0.0722));
 
-    hdrColor = 1 - exp(-hdrColor * exposure);
+    float mappedExposure = 1.0 - exp(-exposure * luminance);
+    vec3 mappedColor = hdrColor * mappedExposure / (luminance + 0.01);
 
-    oFragmentColor = vec4(hdrColor, 1.f);
+    mappedColor = pow(mappedColor, vec3(1.0 / gamma));
+
+    // Shadow calculation
+    float shadow = ShadowCalculation(FragPosLightSpace);
+
+    vec3 shColor = (1.0 - shadow) * mappedColor;
+
+    oFragmentColor = vec4(shColor, 1.0);
 }

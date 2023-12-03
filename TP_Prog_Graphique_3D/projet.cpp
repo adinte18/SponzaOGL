@@ -37,8 +37,11 @@ class Viewer: public EZCOGL::GLViewer
 	EZCOGL::FBO_DepthTexture::SP fbo_depth;
 
 	EZCOGL::ShaderProgram::UP shaderPrg;
+	EZCOGL::ShaderProgram::UP shadowShader;
+
 	std::vector<EZCOGL::MeshRenderer::UP> sponzaRenderer;
 	EZCOGL::MeshRenderer::UP sphereRend;
+
 	int nbMeshParts;
 	EZCOGL::GLVec3 lightPos;
 	EZCOGL::GLVec3 lightDir;
@@ -53,10 +56,13 @@ class Viewer: public EZCOGL::GLViewer
 	std::vector<EZCOGL::Texture2D::SP> tex_kd;
 	std::vector<EZCOGL::Texture2D::SP> tex_normal_map;
 
+	EZCOGL::Texture2D::SP tex_FBO;
+
 	bool normalMapping;
 
 	float gamma;
 	float exposure;
+	float bias;
 
 
 public:
@@ -74,18 +80,22 @@ int main(int, char**)
 
 Viewer::Viewer()
 {
-	lightPos = EZCOGL::GLVec3(0.f, 5000.f, 0.f);
-	gamma = 2.5f;
-	exposure = 0.f;
+	lightPos = EZCOGL::GLVec3(0.f, 500.f, 0.f);
+	gamma = 1.2f;
+	exposure = 0.2f;
 	intensity = 1.f;
+	bias = 1.f;
 }
 
 void Viewer::init_ogl()
 {
 	shaderPrg = EZCOGL::ShaderProgram::create({{GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.fs")}}, "Sponza");
-	
-	auto tex_FBO = EZCOGL::Texture2D::create({ GL_NEAREST, GL_REPEAT });
+	shadowShader = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/shadow.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/shadow.fs")} }, "Shadow");
+
+	tex_FBO = EZCOGL::Texture2D::create({ GL_NEAREST, GL_REPEAT });
+	tex_FBO->init(GL_RGBA8);
 	fbo_depth = EZCOGL::FBO_DepthTexture::create({ tex_FBO });
+	fbo_depth->resize(8192, 8192);
 
 	// ***********************************
 	// Geometry
@@ -121,41 +131,66 @@ void Viewer::init_ogl()
 
 void Viewer::draw_ogl()
 {
+	// Get the view and projection matrix
+	const EZCOGL::GLMat4& view = this->get_view_matrix();
+	const EZCOGL::GLMat4& proj = this->get_projection_matrix();
+	// Construct a model matrix
+	const EZCOGL::GLMat4& model = EZCOGL::Transfo::scale(1.5f);
+
+	// ***********************************
+	// FIRST PASS
+	// ***********************************
+	EZCOGL::GLVec3 lookDir = this->get_camera().pivot_point_f() - lightPos;
+	EZCOGL::GLMat4 lView = EZCOGL::Transfo::look_dir(lightPos, lookDir, EZCOGL::GLVec3(0.f, 1.f, 0.f));
+	float radius = this->get_camera().scene_radius();
+	EZCOGL::GLMat4 lProj = (EZCOGL::Transfo::ortho(radius, radius, std::max(lookDir.norm() - radius, 0.01f), lookDir.norm() + radius)).transpose();
+	EZCOGL::GLMat4 lightSpaceMatrix = lProj * lView;
+
+	EZCOGL::FBO::push();
+	fbo_depth->bind();
+	
+	//Clear color buffer bit (no depth here)
+	glClear(GL_DEPTH_BUFFER_BIT);	
+	glEnable(GL_DEPTH_TEST);
+
+	shadowShader->bind();
+
+	EZCOGL::set_uniform_value(0, model);
+	EZCOGL::set_uniform_value(1, lightSpaceMatrix);
+
+	for (int i = 0; i < nbMeshParts; ++i)
+	{
+		sponzaRenderer[i]->draw(GL_TRIANGLES);
+	}
+	glDisable(GL_CULL_FACE);
+
+	// ***********************************
+	// SECOND PASS
+	// ***********************************
+
+	EZCOGL::FBO::pop();
 
 	// Clear the buffer before to draw the next frame
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-    // Enable Depth test
-	glEnable(GL_DEPTH_TEST);
-
-    // Get the view and projection matrix
-	const EZCOGL::GLMat4& view = this->get_view_matrix();
-	const EZCOGL::GLMat4& proj = this->get_projection_matrix();
-    // Construct a model matrix
-    const EZCOGL::GLMat4& model = EZCOGL::Transfo::rotateX(-90.0) * EZCOGL::Transfo::scale(1.5f);
-
 	// ***********************************
 	// Rendering
 	// ***********************************
 	shaderPrg->bind();
 
-	const EZCOGL::GLMat4& modelSphere = EZCOGL::Transfo::translate(200.f, 200.f, -200.f) * EZCOGL::Transfo::scale(0.7f);
-	EZCOGL::set_uniform_value(0, modelSphere);
-	EZCOGL::set_uniform_value(3, EZCOGL::Transfo::inverse_transpose(modelSphere));
-	sphereRend->draw(GL_TRIANGLES);
-
 	// Uniforms variables send to the GPU
 	EZCOGL::set_uniform_value(0, model);
 	EZCOGL::set_uniform_value(1, view);
 	EZCOGL::set_uniform_value(2, proj);
-	EZCOGL::set_uniform_value(3, EZCOGL::Transfo::inverse_transpose(view * model));
+	EZCOGL::set_uniform_value(3, EZCOGL::Transfo::inverse_transpose(model));
 	EZCOGL::set_uniform_value(4, EZCOGL::GLVec3(intensity, intensity, intensity));
-	EZCOGL::set_uniform_value(5, EZCOGL::Transfo::sub33(view * model) * lightPos);
+	EZCOGL::set_uniform_value(5, EZCOGL::Transfo::sub33(model) * lightPos);
 	EZCOGL::set_uniform_value(10, normalMapping);
 	EZCOGL::set_uniform_value(11, gamma);
 	EZCOGL::set_uniform_value(12, exposure);
-
-
+	EZCOGL::set_uniform_value(13, lView);
+	EZCOGL::set_uniform_value(14, lProj);
+	EZCOGL::set_uniform_value(15, bias);
 
 	for (int i = 0; i < nbMeshParts; ++i)
 	{
@@ -171,7 +206,17 @@ void Viewer::draw_ogl()
 			tex_normal_map[i]->bind(1);
 		}
 		sponzaRenderer[i]->draw(GL_TRIANGLES);
+
+		fbo_depth->depth_texture()->bind(2);
+
 	}
+
+	const EZCOGL::GLMat4& modelSphere = EZCOGL::Transfo::translate(lightPos) * EZCOGL::Transfo::scale(100.f);
+	EZCOGL::set_uniform_value(0, modelSphere);
+	EZCOGL::set_uniform_value(3, EZCOGL::Transfo::inverse_transpose(modelSphere));
+	sphereRend->draw(GL_TRIANGLES);
+
+	glDisable(GL_CULL_FACE);
 }
 
 void Viewer::interface_ogl()
@@ -185,14 +230,19 @@ void Viewer::interface_ogl()
 		shaderPrg = EZCOGL::ShaderProgram::create({{GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.fs")}}, "Sponza");
 
 	ImGui::SliderFloat("Light Intensity", &intensity, 0.f, 100.f);
-	ImGui::SliderFloat("Light Position X", &lightPos[0], 0.f, 200.f);
-	ImGui::SliderFloat("Light Position Y", &lightPos[1], 0.f, 5000.f);
-	ImGui::SliderFloat("Light Position Z", &lightPos[2], 0.f, 200.f);
+	ImGui::SliderFloat("Light Position X", &lightPos[0], -5000.f, 5000.f);
+	ImGui::SliderFloat("Light Position Y", &lightPos[1], -5000.f, 5000.f);
+	ImGui::SliderFloat("Light Position Z", &lightPos[2], -5000.f, 5000.f);
 
-	ImGui::SliderFloat("Gamma", &gamma, 0.f, 100.f);
-	ImGui::SliderFloat("Exposure", &exposure, 0.5f, 5.f);
+	ImGui::SliderFloat("Gamma", &gamma, 0.f, 3.f);
+	ImGui::SliderFloat("Exposure", &exposure, 0.f, 5.f);
+	ImGui::SliderFloat("Shadow bias", &bias, 0.5f, 1000.f);
+
 
 	ImGui::Checkbox("Normal map", &normalMapping);
+
+	if (ImGui::CollapsingHeader("FBO texture content"))
+		ImGui::Image(reinterpret_cast<ImTextureID>(fbo_depth->depth_texture()->id()), ImVec2(400, 400), ImVec2(0, 1), ImVec2(1, 0));
 
 
 	ImGui::End();
