@@ -24,6 +24,7 @@
 #include "gl_viewer.h"
 #include "mesh.h"
 #include "fbo.h"
+#include "texturecubemap.h"
 
 #define macro_str(s) #s
 #define macro_xstr(s) macro_str(s)
@@ -38,9 +39,11 @@ class Viewer: public EZCOGL::GLViewer
 
 	EZCOGL::ShaderProgram::UP shaderPrg;
 	EZCOGL::ShaderProgram::UP shadowShader;
+	EZCOGL::ShaderProgram::UP skyboxShader;
 
 	std::vector<EZCOGL::MeshRenderer::UP> sponzaRenderer;
 	EZCOGL::MeshRenderer::UP sphereRend;
+	EZCOGL::MeshRenderer::UP skyRend;
 
 	int nbMeshParts;
 	EZCOGL::GLVec3 lightPos;
@@ -56,6 +59,8 @@ class Viewer: public EZCOGL::GLViewer
 	std::vector<EZCOGL::Texture2D::SP> tex_kd;
 	std::vector<EZCOGL::Texture2D::SP> tex_normal_map;
 
+
+	EZCOGL::TextureCubeMap::SP tex_envMap;
 	EZCOGL::Texture2D::SP tex_FBO;
 
 	bool normalMapping;
@@ -89,21 +94,39 @@ Viewer::Viewer()
 
 void Viewer::init_ogl()
 {
+	// ***********************************
+	// Shader Programs
+	// ***********************************
+	skyboxShader = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/skybox.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/skybox.fs")} }, "Skybox");
 	shaderPrg = EZCOGL::ShaderProgram::create({{GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.fs")}}, "Sponza");
 	shadowShader = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/shadow.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/shadow.fs")} }, "Shadow");
 
+	// ***********************************
+	// Shadow Texture
+	// ***********************************
 	tex_FBO = EZCOGL::Texture2D::create({ GL_NEAREST, GL_REPEAT });
 	tex_FBO->init(GL_RGBA8);
 	fbo_depth = EZCOGL::FBO_DepthTexture::create({ tex_FBO });
 	fbo_depth->resize(8192, 8192);
+	// ***********************************
+	// Skybox
+	// ***********************************
+	auto meshCube = EZCOGL::Mesh::CubePosOnly();
+	skyRend = meshCube->renderer(1, -1, -1, -1, -1); // We only need the 3D position of vertices
+
+	tex_envMap = EZCOGL::TextureCubeMap::create({ GL_LINEAR, GL_REPEAT });
+	tex_envMap->load({ DATA_PATH + "/skybox/bluecloud_rt.jpg", DATA_PATH + "/skybox/bluecloud_lf.jpg", DATA_PATH + "/skybox/bluecloud_dn.jpg", DATA_PATH + "/skybox/bluecloud_up.jpg", DATA_PATH + "/skybox/bluecloud_bk.jpg", DATA_PATH + "/skybox/bluecloud_ft.jpg" });
+
 
 	// ***********************************
-	// Geometry
+	// Sponza
 	// ***********************************
-
 	auto sponza = EZCOGL::Mesh::load(DATA_PATH + "/Sponza/sponza.obj")->data();
 	nbMeshParts = sponza.size();
 
+	// ***********************************
+	// Sphere
+	// ***********************************
     auto me = EZCOGL::Mesh::Sphere(64);
 	sphereRend = me->renderer(1, -1, -1, -1, -1);
 
@@ -119,6 +142,8 @@ void Viewer::init_ogl()
 	}
 
 	this->cam_.set_mode(EZCOGL::Camera::Mode::MANIPULATION);
+
+	this->cam_.show_entire_scene();
 
 	// set scene center and radius for the init of matrix view/proj
 	set_scene_center(EZCOGL::GLVec3(0.f, 0.f, 0.f));
@@ -137,8 +162,9 @@ void Viewer::draw_ogl()
 	// Construct a model matrix
 	const EZCOGL::GLMat4& model = EZCOGL::Transfo::scale(1.5f);
 
+
 	// ***********************************
-	// FIRST PASS
+	// SECOND PASS
 	// ***********************************
 	EZCOGL::GLVec3 lookDir = this->get_camera().pivot_point_f() - lightPos;
 	EZCOGL::GLMat4 lView = EZCOGL::Transfo::look_dir(lightPos, lookDir, EZCOGL::GLVec3(0.f, 1.f, 0.f));
@@ -165,13 +191,32 @@ void Viewer::draw_ogl()
 	}
 
 	// ***********************************
-	// SECOND PASS
+	// THIRD PASS
 	// ***********************************
 
 	EZCOGL::FBO::pop();
 
 	// Clear the buffer before to draw the next frame
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+	// Construct view matrix for skybox i.e without translation and scale
+	EZCOGL::GLMat4 vi = view;
+	vi.block<3, 1>(0, 3).setZero();	// remove translation
+	vi.block<3, 1>(0, 1).normalize();//
+	vi.block<3, 1>(0, 2).normalize();// remove scale
+	vi.block<3, 1>(0, 3).normalize();//
+
+	glDisable(GL_DEPTH_TEST);
+
+	skyboxShader->bind();
+	EZCOGL::set_uniform_value(0, vi);
+	EZCOGL::set_uniform_value(1, proj);
+	tex_envMap->bind(0);
+	skyRend->draw(GL_TRIANGLES);
+
+	glEnable(GL_DEPTH_TEST);
+
 	
 	// ***********************************
 	// Rendering
@@ -195,6 +240,8 @@ void Viewer::draw_ogl()
 	EZCOGL::set_uniform_value(12, exposure);
 	EZCOGL::set_uniform_value(13, lightSpaceMatrix);
 	EZCOGL::set_uniform_value(15, bias);
+
+	tex_envMap->bind(3);
 
 	for (int i = 0; i < nbMeshParts; ++i)
 	{
@@ -238,6 +285,9 @@ void Viewer::interface_ogl()
 
 	if (ImGui::CollapsingHeader("FBO texture content"))
 		ImGui::Image(reinterpret_cast<ImTextureID>(fbo_depth->depth_texture()->id()), ImVec2(400, 400), ImVec2(0, 1), ImVec2(1, 0));
+
+	if (ImGui::CollapsingHeader("EnvMap texture content"))
+		ImGui::Image(reinterpret_cast<ImTextureID>(tex_envMap->id()), ImVec2(400, 400), ImVec2(0, 1), ImVec2(1, 0));
 
 
 	ImGui::End();
