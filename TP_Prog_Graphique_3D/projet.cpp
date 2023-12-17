@@ -45,7 +45,7 @@ class Viewer: public EZCOGL::GLViewer
 	EZCOGL::MeshRenderer::UP sphereRend;
 	EZCOGL::MeshRenderer::UP skyRend;
 
-	int nbMeshParts;
+	size_t nbMeshParts;
 	EZCOGL::GLVec3 lightPos;
 	EZCOGL::GLVec3 lightDir;
 
@@ -64,6 +64,11 @@ class Viewer: public EZCOGL::GLViewer
 	EZCOGL::Texture2D::SP tex_FBO;
 
 	bool normalMapping;
+	bool nav_mode;
+
+	bool wKeyPressed;
+	float movementSpeed; // Adjust as needed
+
 
 	float gamma;
 	float exposure;
@@ -75,6 +80,7 @@ public:
 	void init_ogl() override;
 	void draw_ogl() override;
 	void interface_ogl() override;
+	void key_press_ogl(int32_t) override;
 };
 
 int main(int, char**)
@@ -85,12 +91,31 @@ int main(int, char**)
 
 Viewer::Viewer()
 {
-	lightPos = EZCOGL::GLVec3(0.f, 500.f, 0.f);
+	lightPos = EZCOGL::GLVec3(0.f, 3200.f, 0.01f);
 	gamma = 0.6f;
 	exposure = 0.4f;
 	intensity = 1.f;
 	bias = 1.f;
+	nav_mode = true;
+	wKeyPressed = false;
+	movementSpeed = 1.0f;
+
 }
+
+void Viewer::key_press_ogl(int32_t key_code) {
+	if (this->cam_.is_navigation_mode()) {
+		switch (key_code) {
+		case 'W':
+			wKeyPressed = true;
+			break;
+		default:
+			wKeyPressed = false;
+			break;
+		}
+	}
+}
+
+
 
 void Viewer::init_ogl()
 {
@@ -108,27 +133,26 @@ void Viewer::init_ogl()
 	tex_FBO->init(GL_RGBA8);
 	fbo_depth = EZCOGL::FBO_DepthTexture::create({ tex_FBO });
 	fbo_depth->resize(8192, 8192);
+
 	// ***********************************
-	// Skybox
+	// Skybox renderer + Texture
 	// ***********************************
 	auto meshCube = EZCOGL::Mesh::CubePosOnly();
 	skyRend = meshCube->renderer(1, -1, -1, -1, -1); // We only need the 3D position of vertices
 
 	tex_envMap = EZCOGL::TextureCubeMap::create({ GL_LINEAR, GL_REPEAT });
-	tex_envMap->load({ DATA_PATH + "/skybox/bluecloud_rt.jpg", DATA_PATH + "/skybox/bluecloud_lf.jpg", DATA_PATH + "/skybox/bluecloud_dn.jpg", DATA_PATH + "/skybox/bluecloud_up.jpg", DATA_PATH + "/skybox/bluecloud_bk.jpg", DATA_PATH + "/skybox/bluecloud_ft.jpg" });
-
+	tex_envMap->load({ DATA_PATH + "/skybox/miramar_rt.tga", 
+					   DATA_PATH + "/skybox/miramar_lf.tga", 
+					   DATA_PATH + "/skybox/miramar_up.tga", 
+		               DATA_PATH + "/skybox/miramar_dn.tga", 
+					   DATA_PATH + "/skybox/miramar_bk.tga", 
+					   DATA_PATH + "/skybox/miramar_ft.tga" });
 
 	// ***********************************
-	// Sponza
+	// Sponza renderer
 	// ***********************************
 	auto sponza = EZCOGL::Mesh::load(DATA_PATH + "/Sponza/sponza.obj")->data();
 	nbMeshParts = sponza.size();
-
-	// ***********************************
-	// Sphere
-	// ***********************************
-    auto me = EZCOGL::Mesh::Sphere(64);
-	sphereRend = me->renderer(1, -1, -1, -1, -1);
 
 	for (int i = 0; i < nbMeshParts; ++i)
 	{
@@ -141,7 +165,15 @@ void Viewer::init_ogl()
 		tex_normal_map.push_back(sponza[i]->material()->tex_norm_map);
 	}
 
-	this->cam_.set_mode(EZCOGL::Camera::Mode::MANIPULATION);
+	// ***********************************
+	// Sphere renderer
+	// ***********************************
+    auto me = EZCOGL::Mesh::Sphere(64);
+	sphereRend = me->renderer(1, -1, -1, -1, -1);
+
+	if (nav_mode) {
+		this->cam_.set_mode(EZCOGL::Camera::Mode::NAVIGATION);
+	}
 
 	this->cam_.show_entire_scene();
 
@@ -156,6 +188,13 @@ void Viewer::init_ogl()
 
 void Viewer::draw_ogl()
 {
+	if (wKeyPressed) {
+		std::cout << "W Pressed" << std::endl;
+		this->cam_.frame_.translation().z() += movementSpeed;
+		this->ask_update();
+	}
+
+
 	// Get the view and projection matrix
 	const EZCOGL::GLMat4& view = this->get_view_matrix();
 	const EZCOGL::GLMat4& proj = this->get_projection_matrix();
@@ -164,7 +203,7 @@ void Viewer::draw_ogl()
 
 
 	// ***********************************
-	// SECOND PASS
+	// FIRST PASS - SHADOWS
 	// ***********************************
 	EZCOGL::GLVec3 lookDir = this->get_camera().pivot_point_f() - lightPos;
 	EZCOGL::GLMat4 lView = EZCOGL::Transfo::look_dir(lightPos, lookDir, EZCOGL::GLVec3(0.f, 1.f, 0.f));
@@ -191,7 +230,7 @@ void Viewer::draw_ogl()
 	}
 
 	// ***********************************
-	// THIRD PASS
+	// SECOND PASS - SKYBOX
 	// ***********************************
 
 	EZCOGL::FBO::pop();
@@ -219,7 +258,7 @@ void Viewer::draw_ogl()
 
 	
 	// ***********************************
-	// Rendering
+	// THIRD PASS - SPONZA MODEL PASS
 	// ***********************************
 	shaderPrg->bind();
 
@@ -268,13 +307,15 @@ void Viewer::interface_ogl()
 	ImGui::SetWindowSize({0,0});
 
 	ImGui::Text("FPS :(%2.2lf)", fps_);
-	if (ImGui::Button("Reload shaders"))
-		shaderPrg = EZCOGL::ShaderProgram::create({{GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.fs")}}, "Sponza");
-
-	ImGui::SliderFloat("Light Intensity", &intensity, 0.f, 100.f);
-	ImGui::SliderFloat("Light Position X", &lightPos[0], -5000.f, 5000.f);
-	ImGui::SliderFloat("Light Position Y", &lightPos[1], -5000.f, 5000.f);
-	ImGui::SliderFloat("Light Position Z", &lightPos[2], -5000.f, 5000.f);
+	if (ImGui::Button("Reload shaders")) {
+		shaderPrg = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/projet.fs")} }, "Sponza");
+		skyboxShader = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/skybox.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/skybox.fs")} }, "Skybox");
+		shadowShader = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/shadow.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/shadow.fs")} }, "Shadow");
+	}
+	ImGui::SliderFloat("Light Intensity", &intensity, 0.f, 300.f);
+	ImGui::SliderFloat("Light Position X", &lightPos[0], -50000.f, 50000.f);
+	ImGui::SliderFloat("Light Position Y", &lightPos[1], -50000.f, 50000.f);
+	ImGui::SliderFloat("Light Position Z", &lightPos[2], -50000.f, 50000.f);
 
 	ImGui::SliderFloat("Gamma", &gamma, 0.f, 3.f);
 	ImGui::SliderFloat("Exposure", &exposure, 0.f, 5.f);
@@ -282,6 +323,8 @@ void Viewer::interface_ogl()
 
 
 	ImGui::Checkbox("Normal map", &normalMapping);
+	ImGui::Checkbox("Navigation mode", &nav_mode);
+
 
 	if (ImGui::CollapsingHeader("FBO texture content"))
 		ImGui::Image(reinterpret_cast<ImTextureID>(fbo_depth->depth_texture()->id()), ImVec2(400, 400), ImVec2(0, 1), ImVec2(1, 0));

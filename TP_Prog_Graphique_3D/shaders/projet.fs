@@ -27,7 +27,7 @@ layout (location = 15) uniform float biasMax;
 layout(binding = 0) uniform sampler2D uTex;
 layout(binding = 1) uniform sampler2D uNormals;
 layout(binding = 2) uniform sampler2D uShadow;
-layout(binding = 3) uniform sampler2D uSkyTex;
+layout(binding = 3) uniform samplerCube uSkyTex;
 
 float ShadowCalculation(vec4 fragPosLightSpace, vec3 lightDir, vec3 normal) {
     // perform perspective divide
