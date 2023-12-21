@@ -5,5 +5,5 @@ out vec4 frag_out;
 
 void main()
 {
-	frag_out = vec4(0.192f, 0.608f, 0.329f, 1.0f);
+	frag_out = vec4(0.61, 0.40, 0.12, 1.0f);
 }

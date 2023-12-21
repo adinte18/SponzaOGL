@@ -1,5 +1,7 @@
 #version 430
 #define PI 3.14159265358979
+#define NUM_TEXTURES_X 4.0
+#define NUM_TEXTURES_Y 2.0
 
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
@@ -7,6 +9,10 @@ layout(triangle_strip, max_vertices = 4) out;
 layout (location = 1) uniform mat4 u_model;
 layout (location = 2) uniform mat4 u_view;
 layout (location = 3) uniform mat4 u_projection;
+layout (location = 5) uniform sampler2D u_wind;
+layout (location = 6) uniform float u_time;
+layout (location = 7) uniform float grass_min_size;
+layout (location = 8) uniform float wind_speed;
 
 out vec2 tex_coord;
 
@@ -16,14 +22,15 @@ mat4 rotationZ(in float angle);
 float random (vec2 st);
 
 float grass_size;
-const float c_min_size = 2.4f;
+const float c_min_size = grass_min_size;
 
-void createQuad(vec3 base_position, mat4 crossmodel){
+
+void createQuad(vec3 base_position, mat4 crossmodel, vec2 texOffset){
 	vec4 vertexPosition[4];
 	vertexPosition[0] = vec4(-0.2, 0.0, 0.0, 0.0); 	// down left
 	vertexPosition[1] = vec4( 0.2, 0.0, 0.0, 0.0);		// down right
-	vertexPosition[2] = vec4(-0.2, 0.2, 0.0, 0.0);	// up left
-	vertexPosition[3] = vec4( 0.2, 0.2, 0.0, 0.0);	// up right
+	vertexPosition[2] = vec4(-0.2, 0.5, 0.0, 0.0);	// up left
+	vertexPosition[3] = vec4( 0.2, 0.5, 0.0, 0.0);	// up right
 
 	vec2 textCoords[4];
 	textCoords[0] = vec2(0.0, 0.0);						// down left
@@ -31,17 +38,38 @@ void createQuad(vec3 base_position, mat4 crossmodel){
 	textCoords[2] = vec2(0.0, 1.0);						// up left
 	textCoords[3] = vec2(1.0, 1.0);						// up right
 
-	mat4 modelRandY = rotationY(random(base_position.zx)*PI);
+	float randomSeed = 0.5; // Seed value for initial direction, can be any constant value
 
+    vec2 randDirection = normalize(vec2(random(vec2(randomSeed, 0.0)), random(vec2(randomSeed + 1.0, 0.0))));
 
+	vec2 windDirection = randDirection; // direction du vent
+	float windStrength = wind_speed;	// force du vent
+	// coordonnées de textures du vent qui se déplace
+	vec2 uv = base_position.xz/10.0 + windDirection * windStrength * u_time ;
+	uv.x = mod(uv.x,1.0); // on ramère la coordonnée modulo 1
+	uv.y = mod(uv.y,1.0);
+ 
+	vec4 wind = texture(u_wind, uv); // on récupère la valeur rgba
+	// on calcule la matrice qui permet d'incliner le quad en fonction de la 
+	// direction et force du vent
+	mat4 modelWind =  (rotationX(wind.x*PI*0.75f - PI*0.25f) * 
+		  		rotationZ(wind.y*PI*0.75f - PI*0.25f)); 
+
+	mat4 modelWindApply = mat4(1);
+	// pour chaque coin du quad
 	for(int i = 0; i < 4; i++) {
-		gl_Position = u_projection * u_view * (gl_in[0].gl_Position 
-			+ modelRandY * crossmodel * (vertexPosition[i] * grass_size));
-	
+		// pour appliquer le vent seulement sur les coins du dessus
+		if (i == 2 ) modelWindApply = modelWind;
+		// calcul de la position finale
+		gl_Position = u_projection * u_view * 
+			(gl_in[0].gl_Position + modelWindApply*crossmodel*
+        				(vertexPosition[i]*grass_size));
+ 
 		tex_coord = textCoords[i];
-	    EmitVertex();
-    }
-    EndPrimitive();
+		EmitVertex();
+	}
+	EndPrimitive();
+
 }
 
 mat4 rotationX( in float angle ) {
@@ -78,9 +106,13 @@ void createGrass()
 	model45 = rotationY(radians(45));
 	modelm45 = rotationY(-radians(45));
  
-	createQuad(gl_in[0].gl_Position.xyz, model0);
-	createQuad(gl_in[0].gl_Position.xyz, model45);
-	createQuad(gl_in[0].gl_Position.xyz, modelm45);	
+	float textureIndex = 1.0; // Replace this with your method to determine the texture index
+	vec2 textureOffset = vec2(mod(textureIndex, NUM_TEXTURES_X), floor(textureIndex / NUM_TEXTURES_X)) / vec2(NUM_TEXTURES_X, NUM_TEXTURES_Y);
+
+
+	createQuad(gl_in[0].gl_Position.xyz, model0, textureOffset);
+	createQuad(gl_in[0].gl_Position.xyz, model45, textureOffset);
+	createQuad(gl_in[0].gl_Position.xyz, modelm45, textureOffset);	
 }
 
 void main()

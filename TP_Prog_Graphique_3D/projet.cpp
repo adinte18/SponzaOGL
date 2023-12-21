@@ -72,6 +72,8 @@ class Viewer: public EZCOGL::GLViewer
 	EZCOGL::TextureCubeMap::SP tex_envMap;
 	EZCOGL::Texture2D::SP tex_FBO;
 	EZCOGL::Texture2D::SP tex_grass;
+	EZCOGL::Texture2D::SP tex_wind;
+	EZCOGL::Texture2D::SP atlas_grass;
 
 	bool normalMapping;
 	bool nav_mode;
@@ -83,6 +85,8 @@ class Viewer: public EZCOGL::GLViewer
 	float gamma;
 	float exposure;
 	float bias;
+	float grass_min_size;
+	float wind_speed;
 
 	int resolution;
 	int scale;
@@ -119,7 +123,8 @@ Viewer::Viewer()
 	nav_mode = true;
 	wKeyPressed = false;
 	movementSpeed = 1.0f;
-
+	grass_min_size = 2.4f;
+	wind_speed = 0.15;
 }
 
 void Viewer::key_press_ogl(int32_t key_code) {
@@ -157,8 +162,8 @@ void Viewer::init_ogl()
 	// and it's associate renderer with VBO positions (1) and VBO tex coords (2)
 	renderer_landscape = rend->renderer(1, -1, 2, -1, -1);
 
-	for (float x = -10.0f; x < 10.0f; x += 0.2f)
-		for (float z = -10.0f; z < 10.0f; z += 0.2f)
+	for (float x = -75.0f; x < 75.0f; x += 0.2f)
+		for (float z = -75.0f; z < 75.0f; z += 0.2f)
 		{
 			positions.push_back(EZCOGL::GLVec3(x, 0, z));
 		}
@@ -170,6 +175,13 @@ void Viewer::init_ogl()
 
 	tex_grass = EZCOGL::Texture2D::create();
 	tex_grass->load(DATA_PATH + "/textures/grass_texture.png");
+
+	atlas_grass = EZCOGL::Texture2D::create();
+	atlas_grass->load(DATA_PATH + "/textures/grass_atlas.png");
+
+
+	tex_wind = EZCOGL::Texture2D::create();
+	tex_wind->load(DATA_PATH + "/textures/wind.jpg");
 
 
 	// ***********************************
@@ -358,23 +370,29 @@ void Viewer::draw_ogl()
 		// Clear the buffer before to draw the next frame
 
 		set_scene_center(EZCOGL::GLVec3(0.f, 0.f, 0.f));
-		set_scene_radius(75.f);
+		set_scene_radius(150.f);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 
 		landscapeShader->bind();
-		EZCOGL::set_uniform_value(1, model* EZCOGL::Transfo::translate(EZCOGL::GLVec3(0.f, -0.5f, 0.f))* EZCOGL::Transfo::rotateX(93)* EZCOGL::Transfo::scale(2));
+		EZCOGL::set_uniform_value(1, model* EZCOGL::Transfo::translate(EZCOGL::GLVec3(0.f, 0.05f, 0.f))* EZCOGL::Transfo::rotateX(90)* EZCOGL::Transfo::scale(50));
 		EZCOGL::set_uniform_value(2, view);
 		EZCOGL::set_uniform_value(3, proj);
-		renderer_landscape->draw(GL_POINTS);
+		renderer_landscape->draw(GL_TRIANGLES);
 
+		float time = EZCOGL::current_time();
 
 		grassShader->bind();
 		EZCOGL::set_uniform_value(1, model);
 		EZCOGL::set_uniform_value(2, view);
 		EZCOGL::set_uniform_value(3, proj);
 		EZCOGL::set_uniform_value(4, tex_grass->bind(0));
+		EZCOGL::set_uniform_value(9, atlas_grass->bind(2));
+		EZCOGL::set_uniform_value(5, tex_wind->bind(1));
+		EZCOGL::set_uniform_value(6, time);
+		EZCOGL::set_uniform_value(7, grass_min_size);
+		EZCOGL::set_uniform_value(8, wind_speed);
 
 		vao->bind();
 		glPointSize(5.0f);
@@ -396,19 +414,28 @@ void Viewer::interface_ogl()
 		grassShader = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grass.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grass.fs")}, {GL_GEOMETRY_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grass.gs")} }, "Grass");
 		landscapeShader = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/landscape.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/landscape.fs")} }, "landscape");
 	}
-	ImGui::SliderFloat("Light Intensity", &intensity, 0.f, 300.f);
-	ImGui::SliderFloat("Light Position X", &lightPos[0], -50000.f, 50000.f);
-	ImGui::SliderFloat("Light Position Y", &lightPos[1], -50000.f, 50000.f);
-	ImGui::SliderFloat("Light Position Z", &lightPos[2], -50000.f, 50000.f);
 
-	ImGui::SliderFloat("Gamma", &gamma, 0.f, 3.f);
-	ImGui::SliderFloat("Exposure", &exposure, 0.f, 5.f);
+	if (ImGui::CollapsingHeader("Sponza")) {
+		ImGui::SliderFloat("Light Intensity", &intensity, 0.f, 300.f);
+		ImGui::SliderFloat("Light Position X", &lightPos[0], -50000.f, 50000.f);
+		ImGui::SliderFloat("Light Position Y", &lightPos[1], -50000.f, 50000.f);
+		ImGui::SliderFloat("Light Position Z", &lightPos[2], -50000.f, 50000.f);
 
-	ImGui::SliderInt("Resolution", &resolution, 1, 100); // resolution : int
-	ImGui::SliderInt("Scale", &scale, 1, 100); // scale : int
+		ImGui::SliderFloat("Gamma", &gamma, 0.f, 3.f);
+		ImGui::SliderFloat("Exposure", &exposure, 0.f, 5.f);
 
-	ImGui::Checkbox("Normal map", &normalMapping);
-	ImGui::Checkbox("Navigation mode", &nav_mode);
+		ImGui::SliderInt("Resolution", &resolution, 1, 100); // resolution : int
+		ImGui::SliderInt("Scale", &scale, 1, 100); // scale : int
+
+		ImGui::Checkbox("Normal map", &normalMapping);
+		ImGui::Checkbox("Navigation mode", &nav_mode);
+	}
+
+	if (ImGui::CollapsingHeader("Grass")) {
+		ImGui::SliderFloat("Grass size", &grass_min_size, 2.3f, 10.f);
+		ImGui::SliderFloat("Wind speed", &wind_speed, 0.15f, 3.f);
+	}
+
 	ImGui::Checkbox("Sponza ON", &sponza);
 
 
