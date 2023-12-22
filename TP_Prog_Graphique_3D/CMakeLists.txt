@@ -13,6 +13,7 @@ endmacro()
 
 set( tp_list
 projet
+tp_note
 )
 
 foreach( exec_tp ${tp_list})

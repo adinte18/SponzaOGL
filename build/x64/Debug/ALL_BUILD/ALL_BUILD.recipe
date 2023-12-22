@@ -2,10 +2,16 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
+      <FullPath>D:\Programare\P3D\easycppogl\build\easycppogl_src\x64\Debug\ZERO_CHECK</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
       <FullPath>D:\Programare\P3D\easycppogl\build\x64\Debug\ZERO_CHECK</FullPath>
     </ProjectOutput>
     <ProjectOutput>
       <FullPath>D:\Programare\P3D\easycppogl\build\TP_Prog_Graphique_3D\Debug\projet.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>D:\Programare\P3D\easycppogl\build\TP_Prog_Graphique_3D\Debug\tp_note.exe</FullPath>
     </ProjectOutput>
     <ProjectOutput>
       <FullPath>D:\Programare\P3D\easycppogl\build\x64\Debug\ALL_BUILD</FullPath>

@@ -181,6 +181,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Project>{8DA94F6B-B0E2-3054-B34A-67C2704C29C9}</Project>
       <Name>projet</Name>
     </ProjectReference>
+    <ProjectReference Include="D:\Programare\P3D\easycppogl\build\TP_Prog_Graphique_3D\tp_note.vcxproj">
+      <Project>{4AB46925-93B3-3B8D-90D4-DF95A4F4DA12}</Project>
+      <Name>tp_note</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
