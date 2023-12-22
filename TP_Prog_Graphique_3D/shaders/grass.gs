@@ -15,17 +15,21 @@ layout (location = 7) uniform float grass_min_size;
 layout (location = 8) uniform float wind_speed;
 
 out vec2 tex_coord;
+out float color_variation;
 
 mat4 rotationX(in float angle);
 mat4 rotationY(in float angle);
 mat4 rotationZ(in float angle);
 float random (vec2 st);
+float noise (in vec2 st);
+float fbm ( in vec2 _st);
+
 
 float grass_size;
 const float c_min_size = grass_min_size;
 
 
-void createQuad(vec3 base_position, mat4 crossmodel, vec2 texOffset){
+void createQuad(vec3 base_position, mat4 crossmodel){
 	vec4 vertexPosition[4];
 	vertexPosition[0] = vec4(-0.2, 0.0, 0.0, 0.0); 	// down left
 	vertexPosition[1] = vec4( 0.2, 0.0, 0.0, 0.0);		// down right
@@ -33,16 +37,23 @@ void createQuad(vec3 base_position, mat4 crossmodel, vec2 texOffset){
 	vertexPosition[3] = vec4( 0.2, 0.5, 0.0, 0.0);	// up right
 
 	vec2 textCoords[4];
-	textCoords[0] = vec2(0.0, 0.0);						// down left
-	textCoords[1] = vec2(1.0, 0.0);						// down right
-	textCoords[2] = vec2(0.0, 1.0);						// up left
-	textCoords[3] = vec2(1.0, 1.0);						// up right
+
+    float offsetX = random(base_position.xz * 0.1);  // Offset aléatoire en X
+    float offsetY = random(base_position.zy * 0.1);  // Offset aléatoire en Y
+
+    int textureX = int(mod(offsetX * 4.0, 4.0)); // Sélection aléatoire sur l'axe X (de 0 à 3)
+    int textureY = int(mod(offsetY * 2.0, 2.0)); // Sélection aléatoire sur l'axe Y (de 0 à 1)
+
+    textCoords[0] = vec2(textureX * 0.25, textureY * 0.5);                  // Coin en bas à gauche
+    textCoords[1] = vec2((textureX + 1) * 0.25, textureY * 0.5);           // Coin en bas à droite
+    textCoords[2] = vec2(textureX * 0.25, (textureY + 1) * 0.5);            // Coin en haut à gauche
+    textCoords[3] = vec2((textureX + 1) * 0.25, (textureY + 1) * 0.5);     // Coin en haut à droite
 
 	float randomSeed = 0.5; // Seed value for initial direction, can be any constant value
 
     vec2 randDirection = normalize(vec2(random(vec2(randomSeed, 0.0)), random(vec2(randomSeed + 1.0, 0.0))));
 
-	vec2 windDirection = randDirection; // direction du vent
+	vec2 windDirection = vec2(1.0, 1.0); 
 	float windStrength = wind_speed;	// force du vent
 	// coordonnées de textures du vent qui se déplace
 	vec2 uv = base_position.xz/10.0 + windDirection * windStrength * u_time ;
@@ -56,15 +67,22 @@ void createQuad(vec3 base_position, mat4 crossmodel, vec2 texOffset){
 		  		rotationZ(wind.y*PI*0.75f - PI*0.25f)); 
 
 	mat4 modelWindApply = mat4(1);
+	
+	mat4 modelRandY = rotationY(random(base_position.zx)*PI);
+
 	// pour chaque coin du quad
 	for(int i = 0; i < 4; i++) {
 		// pour appliquer le vent seulement sur les coins du dessus
 		if (i == 2 ) modelWindApply = modelWind;
 		// calcul de la position finale
-		gl_Position = u_projection * u_view * 
-			(gl_in[0].gl_Position + modelWindApply*crossmodel*
-        				(vertexPosition[i]*grass_size));
+	    gl_Position = u_projection * u_view *
+            (gl_in[0].gl_Position + 
+			modelWindApply * modelRandY * crossmodel *
+			(vertexPosition[i]*grass_size));
  
+
+		color_variation = fbm(gl_in[0].gl_Position.xz);
+
 		tex_coord = textCoords[i];
 		EmitVertex();
 	}
@@ -98,6 +116,43 @@ float random (vec2 st) {
     return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123);
 }
 
+float noise (in vec2 st) {
+	vec2 i = floor(st);
+	vec2 f = fract(st);
+
+	// Four corners in 2D of a tile
+	float a = random(i);
+	float b = random(i + vec2(1.0, 0.0));
+	float c = random(i + vec2(0.0, 1.0));
+	float d = random(i + vec2(1.0, 1.0));
+
+	// Smooth Interpolation
+
+	// Cubic Hermine Curve.  Same as SmoothStep()
+	vec2 u = f*f*(3.0-2.0*f);
+	// u = smoothstep(0.,1.,f);
+
+	// Mix 4 coorners percentages
+	return mix(a, b, u.x) +
+	(c - a)* u.y * (1.0 - u.x) +
+	(d - b) * u.x * u.y;
+}
+#define NUM_OCTAVES 5
+float fbm ( in vec2 _st) {
+	float v = 0.0;
+	float a = 0.5;
+	vec2 shift = vec2(100.0);
+	// Rotate to reduce axial bias
+	mat2 rot = mat2(cos(0.5), sin(0.5),
+	-sin(0.5), cos(0.50));
+	for (int i = 0; i < NUM_OCTAVES; ++i) {
+		v += a * noise(_st);
+		_st = rot * _st * 2.0 + shift;
+		a *= 0.5;
+	}
+	return v;
+}
+
 
 void createGrass()
 {
@@ -105,14 +160,19 @@ void createGrass()
 	model0 = mat4(1.0f);
 	model45 = rotationY(radians(45));
 	modelm45 = rotationY(-radians(45));
- 
-	float textureIndex = 1.0; // Replace this with your method to determine the texture index
-	vec2 textureOffset = vec2(mod(textureIndex, NUM_TEXTURES_X), floor(textureIndex / NUM_TEXTURES_X)) / vec2(NUM_TEXTURES_X, NUM_TEXTURES_Y);
+
+	// Apply random offsets to the original position
+	vec3 base_position = gl_in[0].gl_Position.xyz;
+	float offsetX = random(base_position.xz) * 0.1;
+	float offsetY = random(base_position.zy) * 0.1;
+	base_position.x += offsetX;
+	base_position.z += offsetY;
 
 
-	createQuad(gl_in[0].gl_Position.xyz, model0, textureOffset);
-	createQuad(gl_in[0].gl_Position.xyz, model45, textureOffset);
-	createQuad(gl_in[0].gl_Position.xyz, modelm45, textureOffset);	
+
+	createQuad(base_position.xyz, model0);
+	createQuad(base_position.xyz, model45);
+	createQuad(base_position.xyz, modelm45);	
 }
 
 void main()
