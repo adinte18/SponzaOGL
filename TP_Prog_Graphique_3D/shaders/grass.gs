@@ -2,9 +2,13 @@
 #define PI 3.14159265358979
 #define NUM_TEXTURES_X 4.0
 #define NUM_TEXTURES_Y 2.0
+#define FAR 0
+#define MID 1
+#define CLOSE 2
+#define CLOSEST 3
 
 layout(points) in;
-layout(triangle_strip, max_vertices = 4) out;
+layout(triangle_strip, max_vertices = 36) out;
 
 layout (location = 1) uniform mat4 u_model;
 layout (location = 2) uniform mat4 u_view;
@@ -13,6 +17,9 @@ layout (location = 5) uniform sampler2D u_wind;
 layout (location = 6) uniform float u_time;
 layout (location = 7) uniform float grass_min_size;
 layout (location = 8) uniform float wind_speed;
+layout (location = 10) uniform vec3 u_camerapos;
+layout (location = 12) uniform int height;
+layout (location = 13) uniform int width;
 
 out vec2 tex_coord;
 out float color_variation;
@@ -25,16 +32,18 @@ float noise (in vec2 st);
 float fbm ( in vec2 _st);
 
 
-float grass_size;
 const float c_min_size = grass_min_size;
+const float LOD1 = 10.0f;
+const float LOD2 = 30.0f;
+const float LOD3 = 60.0f;
 
 
 void createQuad(vec3 base_position, mat4 crossmodel){
 	vec4 vertexPosition[4];
-	vertexPosition[0] = vec4(-0.2, 0.0, 0.0, 0.0); 	// down left
-	vertexPosition[1] = vec4( 0.2, 0.0, 0.0, 0.0);		// down right
-	vertexPosition[2] = vec4(-0.2, 0.5, 0.0, 0.0);	// up left
-	vertexPosition[3] = vec4( 0.2, 0.5, 0.0, 0.0);	// up right
+	vertexPosition[0] = vec4(-0.5, 0.0, 0.0, 0.0); 	// down left
+	vertexPosition[1] = vec4( 0.5, 0.0, 0.0, 0.0);		// down right
+	vertexPosition[2] = vec4(-0.5, 1.0, 0.0, 0.0);		// up left
+	vertexPosition[3] = vec4( 0.5, 1.0, 0.0, 0.0);		// up right
 
 	vec2 textCoords[4];
 
@@ -49,9 +58,9 @@ void createQuad(vec3 base_position, mat4 crossmodel){
     textCoords[2] = vec2(textureX * 0.25, (textureY + 1) * 0.5);            // Coin en haut à gauche
     textCoords[3] = vec2((textureX + 1) * 0.25, (textureY + 1) * 0.5);     // Coin en haut à droite
 
-	float randomSeed = 0.5; // Seed value for initial direction, can be any constant value
+	float grass_size = random(gl_in[0].gl_Position.xz) * (1.0f - c_min_size) 
+															+ c_min_size;
 
-    vec2 randDirection = normalize(vec2(random(vec2(randomSeed, 0.0)), random(vec2(randomSeed + 1.0, 0.0))));
 
 	vec2 windDirection = vec2(1.0, 1.0); 
 	float windStrength = wind_speed;	// force du vent
@@ -75,10 +84,10 @@ void createQuad(vec3 base_position, mat4 crossmodel){
 		// pour appliquer le vent seulement sur les coins du dessus
 		if (i == 2 ) modelWindApply = modelWind;
 		// calcul de la position finale
-	    gl_Position = u_projection * u_view *
-            (gl_in[0].gl_Position + 
-			modelWindApply * modelRandY * crossmodel *
-			(vertexPosition[i]*grass_size));
+	    gl_Position = 	    
+			gl_Position = u_projection * u_view *
+            (gl_in[0].gl_Position + modelWindApply*modelRandY*crossmodel*(vertexPosition[i]*grass_size));
+
  
 
 		color_variation = fbm(gl_in[0].gl_Position.xz);
@@ -154,31 +163,49 @@ float fbm ( in vec2 _st) {
 }
 
 
-void createGrass()
-{
-	mat4 model0, model45, modelm45;
-	model0 = mat4(1.0f);
-	model45 = rotationY(radians(45));
-	modelm45 = rotationY(-radians(45));
+void createGrass(int numberQuads) {
+    mat4 model0, model45, modelm45, model_far;
+	model_far = mat4(0.5f);
+    model0 = mat4(1.0f);
+    model45 = rotationY(radians(45));
+    modelm45 = rotationY(-radians(45));
 
-	// Apply random offsets to the original position
-	vec3 base_position = gl_in[0].gl_Position.xyz;
-	float offsetX = random(base_position.xz) * 0.1;
-	float offsetY = random(base_position.zy) * 0.1;
-	base_position.x += offsetX;
-	base_position.z += offsetY;
-
-
-
-	createQuad(base_position.xyz, model0);
-	createQuad(base_position.xyz, model45);
-	createQuad(base_position.xyz, modelm45);	
+    switch (numberQuads) {
+		case FAR: {
+			createQuad(gl_in[0].gl_Position.xyz, model_far);
+			break;
+		}
+        case MID: {
+            createQuad(gl_in[0].gl_Position.xyz, model0);
+            break;
+        }
+        case CLOSE: {
+            createQuad(gl_in[0].gl_Position.xyz, model0);
+            createQuad(gl_in[0].gl_Position.xyz, modelm45);
+            break;
+        }
+        case CLOSEST: {
+            createQuad(gl_in[0].gl_Position.xyz, model0);
+            createQuad(gl_in[0].gl_Position.xyz, model45);
+            createQuad(gl_in[0].gl_Position.xyz, modelm45);
+            break;
+        }
+    }
 }
+
 
 void main()
 {
-    grass_size = random(gl_in[0].gl_Position.xz) * (1.0f - c_min_size) 
-    		+ c_min_size;
+	mat4 viewModel = inverse(u_model * u_view);
+	vec3 cameraPos = vec3(viewModel[3]);
+	
+	vec3 distance_with_camera = gl_in[0].gl_Position.xyz - cameraPos ;
 
-	createGrass();
+	float dist_length = length(distance_with_camera); // finally
+
+	if (dist_length < LOD1) { createGrass(CLOSEST); }
+	if (dist_length >= LOD1 && dist_length < LOD2){ createGrass(CLOSE); }
+	if (dist_length >= LOD2 && dist_length < LOD3){ createGrass(MID); }
+	if (dist_length > LOD3) {createGrass(FAR);}
+
 }

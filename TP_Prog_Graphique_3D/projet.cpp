@@ -79,7 +79,7 @@ class Viewer: public EZCOGL::GLViewer
 	bool nav_mode;
 
 	bool wKeyPressed;
-	float movementSpeed; // Adjust as needed
+	float movementSpeed;
 
 
 	float gamma;
@@ -92,8 +92,11 @@ class Viewer: public EZCOGL::GLViewer
 	int scale;
 
 	bool sponza;
+	bool camera_set;
+
 	uint32_t nbVertex;
 
+	EZCOGL::GLVec3 camera_position;
 
 
 public:
@@ -125,6 +128,7 @@ Viewer::Viewer()
 	movementSpeed = 1.0f;
 	grass_min_size = 2.4f;
 	wind_speed = 0.15;
+	camera_set = false;
 }
 
 void Viewer::key_press_ogl(int32_t key_code) {
@@ -160,7 +164,7 @@ void Viewer::init_ogl()
 
 	auto rend = EZCOGL::Mesh::Grid();
 	// and it's associate renderer with VBO positions (1) and VBO tex coords (2)
-	renderer_landscape = rend->renderer(1, -1, 2, -1, -1);
+	renderer_landscape = rend->renderer(1, 3, 2, -1, -1);
 
 	for (float x = -75.0f; x < 75.0f; x += 0.2f)
 		for (float z = -75.0f; z < 75.0f; z += 0.2f)
@@ -229,7 +233,8 @@ void Viewer::init_ogl()
     auto me = EZCOGL::Mesh::Sphere(64);
 	sphereRend = me->renderer(1, -1, -1, -1, -1);
 
-	this->cam_.set_mode(EZCOGL::Camera::Mode::MANIPULATION);
+	this->cam_.set_mode(EZCOGL::Camera::Mode::NAVIGATION);
+	this->cam_.show_entire_scene();
 
 
 	//if (nav_mode) {
@@ -257,6 +262,7 @@ void Viewer::draw_ogl()
 
 
 	if (sponza) {
+		camera_set = false;
 		if (wKeyPressed) {
 			std::cout << "W Pressed" << std::endl;
 			this->cam_.frame_.translation().z() += movementSpeed;
@@ -369,8 +375,21 @@ void Viewer::draw_ogl()
 		// ***********************************
 		// Clear the buffer before to draw the next frame
 
-		set_scene_center(EZCOGL::GLVec3(0.f, 0.f, 0.f));
-		set_scene_radius(150.f);
+		if (wKeyPressed) {
+			std::cout << "W Pressed" << std::endl;
+			this->cam_.frame_.translation().z() += 0.3f;
+			this->ask_update();
+		}
+
+		if (!camera_set) {
+			this->cam_.frame_.translation().x() = 0.f;
+			this->cam_.frame_.translation().y() = 0.f;
+			this->cam_.frame_.translation().z() = -15.f;
+			this->cam_.show_entire_scene();
+			set_scene_center(EZCOGL::GLVec3(0.f, 0.f, 0.f));
+			set_scene_radius(150.f);
+			camera_set = true;
+		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
@@ -383,6 +402,8 @@ void Viewer::draw_ogl()
 
 		float time = EZCOGL::current_time();
 
+		camera_position = EZCOGL::GLVec3(this->cam_.get_view_matrix().block<3, 1>(0, 3));
+
 		grassShader->bind();
 		EZCOGL::set_uniform_value(1, model);
 		EZCOGL::set_uniform_value(2, view);
@@ -393,6 +414,9 @@ void Viewer::draw_ogl()
 		EZCOGL::set_uniform_value(6, time);
 		EZCOGL::set_uniform_value(7, grass_min_size);
 		EZCOGL::set_uniform_value(8, wind_speed);
+		EZCOGL::set_uniform_value(10, &camera_position[0]);
+		EZCOGL::set_uniform_value(12, atlas_grass->height());
+		EZCOGL::set_uniform_value(13, atlas_grass->width());
 
 		vao->bind();
 		glPointSize(5.0f);
@@ -424,16 +448,17 @@ void Viewer::interface_ogl()
 		ImGui::SliderFloat("Gamma", &gamma, 0.f, 3.f);
 		ImGui::SliderFloat("Exposure", &exposure, 0.f, 5.f);
 
-		ImGui::SliderInt("Resolution", &resolution, 1, 100); // resolution : int
-		ImGui::SliderInt("Scale", &scale, 1, 100); // scale : int
-
 		ImGui::Checkbox("Normal map", &normalMapping);
 		ImGui::Checkbox("Navigation mode", &nav_mode);
 	}
 
 	if (ImGui::CollapsingHeader("Grass")) {
-		ImGui::SliderFloat("Grass size", &grass_min_size, 2.3f, 10.f);
-		ImGui::SliderFloat("Wind speed", &wind_speed, 0.15f, 3.f);
+		ImGui::SliderFloat("Camera Position X", &camera_position[0], -50000.f, 50000.f);
+		ImGui::SliderFloat("Camera Position Y", &camera_position[1], -50000.f, 50000.f);
+		ImGui::SliderFloat("Camera Position Z", &camera_position[2], -50000.f, 50000.f);
+
+		ImGui::SliderFloat("Grass size", &grass_min_size, 1.5f, 10.f);
+		ImGui::SliderFloat("Wind speed", &wind_speed, 0.0f, 3.f);
 	}
 
 	ImGui::Checkbox("Sponza ON", &sponza);
