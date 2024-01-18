@@ -17,6 +17,6 @@ void main()
 {
     vec4 color = texture(grassAtlas, tex_coord);
     if (color.a < 0.25) discard;
-    color.xyz = mix(color.xyz, 0.5 * color.xyz, color_variation);
+    color.xyz = mix(color.xyz, 0.35f * color.xyz, color_variation);
     oFragmentColor = color;
 }

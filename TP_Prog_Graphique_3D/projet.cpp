@@ -87,6 +87,7 @@ class Viewer: public EZCOGL::GLViewer
 	float bias;
 	float grass_min_size;
 	float wind_speed;
+	float more_flowers;
 
 	int resolution;
 	int scale;
@@ -121,7 +122,7 @@ Viewer::Viewer()
 	lightPos = EZCOGL::GLVec3(0.f, 3200.f, 0.01f);
 	gamma = 0.6f;
 	exposure = 0.4f;
-	intensity = 1.f;
+	intensity = 25.f;
 	bias = 1.f;
 	nav_mode = true;
 	wKeyPressed = false;
@@ -129,6 +130,7 @@ Viewer::Viewer()
 	grass_min_size = 2.4f;
 	wind_speed = 0.15;
 	camera_set = false;
+	more_flowers = 0.1f;
 }
 
 void Viewer::key_press_ogl(int32_t key_code) {
@@ -237,12 +239,6 @@ void Viewer::init_ogl()
 	this->cam_.show_entire_scene();
 
 
-	//if (nav_mode) {
-	//	this->cam_.set_mode(EZCOGL::Camera::Mode::NAVIGATION);
-	//}
-
-	//this->cam_.show_entire_scene();
-
 	// set scene center and radius for the init of matrix view/proj
 	set_scene_center(EZCOGL::GLVec3(0.f, 0.f, 0.f));
 	set_scene_radius(5000.f);
@@ -264,7 +260,6 @@ void Viewer::draw_ogl()
 	if (sponza) {
 		camera_set = false;
 		if (wKeyPressed) {
-			std::cout << "W Pressed" << std::endl;
 			this->cam_.frame_.translation().z() += movementSpeed;
 			this->ask_update();
 		}
@@ -309,12 +304,12 @@ void Viewer::draw_ogl()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		// Construct view matrix for skybox i.e without translation and scale
+		// Construct view matrix for skybox
 		EZCOGL::GLMat4 vi = view;
 		vi.block<3, 1>(0, 3).setZero();	// remove translation
-		vi.block<3, 1>(0, 1).normalize();//
-		vi.block<3, 1>(0, 2).normalize();// remove scale
-		vi.block<3, 1>(0, 3).normalize();//
+		vi.block<3, 1>(0, 1).normalize();
+		vi.block<3, 1>(0, 2).normalize();
+		vi.block<3, 1>(0, 3).normalize();
 
 		glDisable(GL_DEPTH_TEST);
 
@@ -395,7 +390,7 @@ void Viewer::draw_ogl()
 		glEnable(GL_DEPTH_TEST);
 
 		landscapeShader->bind();
-		EZCOGL::set_uniform_value(1, model* EZCOGL::Transfo::translate(EZCOGL::GLVec3(0.f, 0.05f, 0.f))* EZCOGL::Transfo::rotateX(90)* EZCOGL::Transfo::scale(50));
+		EZCOGL::set_uniform_value(1, model* EZCOGL::Transfo::translate(EZCOGL::GLVec3(0.f, 0.1f, 0.f))* EZCOGL::Transfo::rotateX(90)* EZCOGL::Transfo::scale(50));
 		EZCOGL::set_uniform_value(2, view);
 		EZCOGL::set_uniform_value(3, proj);
 		renderer_landscape->draw(GL_TRIANGLES);
@@ -414,9 +409,7 @@ void Viewer::draw_ogl()
 		EZCOGL::set_uniform_value(6, time);
 		EZCOGL::set_uniform_value(7, grass_min_size);
 		EZCOGL::set_uniform_value(8, wind_speed);
-		EZCOGL::set_uniform_value(10, &camera_position[0]);
-		EZCOGL::set_uniform_value(12, atlas_grass->height());
-		EZCOGL::set_uniform_value(13, atlas_grass->width());
+		EZCOGL::set_uniform_value(10, more_flowers);
 
 		vao->bind();
 		glPointSize(5.0f);
@@ -439,36 +432,31 @@ void Viewer::interface_ogl()
 		landscapeShader = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/landscape.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/landscape.fs")} }, "landscape");
 	}
 
+	ImGui::Checkbox("Sponza ON", &sponza);
+
 	if (ImGui::CollapsingHeader("Sponza")) {
 		ImGui::SliderFloat("Light Intensity", &intensity, 0.f, 300.f);
-		ImGui::SliderFloat("Light Position X", &lightPos[0], -50000.f, 50000.f);
-		ImGui::SliderFloat("Light Position Y", &lightPos[1], -50000.f, 50000.f);
-		ImGui::SliderFloat("Light Position Z", &lightPos[2], -50000.f, 50000.f);
+		ImGui::SliderFloat("Light Position X", &lightPos[0], -10000.f, 10000.f);
+		ImGui::SliderFloat("Light Position Y", &lightPos[1], -10000.f, 10000.f);
+		ImGui::SliderFloat("Light Position Z", &lightPos[2], -10000.f, 10000.f);
 
 		ImGui::SliderFloat("Gamma", &gamma, 0.f, 3.f);
 		ImGui::SliderFloat("Exposure", &exposure, 0.f, 5.f);
 
 		ImGui::Checkbox("Normal map", &normalMapping);
-		ImGui::Checkbox("Navigation mode", &nav_mode);
 	}
 
 	if (ImGui::CollapsingHeader("Grass")) {
-		ImGui::SliderFloat("Camera Position X", &camera_position[0], -50000.f, 50000.f);
-		ImGui::SliderFloat("Camera Position Y", &camera_position[1], -50000.f, 50000.f);
-		ImGui::SliderFloat("Camera Position Z", &camera_position[2], -50000.f, 50000.f);
+		ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camera_position.x(), camera_position.y(), camera_position.z());
 
 		ImGui::SliderFloat("Grass size", &grass_min_size, 1.5f, 10.f);
+		ImGui::SliderFloat("Flower quantity", &more_flowers, 0.f, 1.f);
 		ImGui::SliderFloat("Wind speed", &wind_speed, 0.0f, 3.f);
 	}
-
-	ImGui::Checkbox("Sponza ON", &sponza);
 
 
 	if (ImGui::CollapsingHeader("FBO texture content"))
 		ImGui::Image(reinterpret_cast<ImTextureID>(fbo_depth->depth_texture()->id()), ImVec2(400, 400), ImVec2(0, 1), ImVec2(1, 0));
-
-	if (ImGui::CollapsingHeader("EnvMap texture content"))
-		ImGui::Image(reinterpret_cast<ImTextureID>(tex_envMap->id()), ImVec2(400, 400), ImVec2(0, 1), ImVec2(1, 0));
 
 
 	ImGui::End();
