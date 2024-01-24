@@ -13,7 +13,7 @@ endmacro()
 
 set( tp_list
 projet
-tp_note
+area_lights
 )
 
 foreach( exec_tp ${tp_list})
