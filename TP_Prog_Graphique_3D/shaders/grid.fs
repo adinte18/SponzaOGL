@@ -3,7 +3,9 @@ precision highp float;
 
 out vec4 color;
 
+layout (location = 4) uniform float intensity;
+
 void main()
 {
-	color = vec4(vec3(1.0f), 1.0f);
+	color = vec4(vec3(intensity), 1.0f);
 }

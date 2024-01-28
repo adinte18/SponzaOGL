@@ -19,8 +19,8 @@ void main()
 
 	w_norm = normalMatrix * normal_in;
 
-	vec4 viewPos = model * vec4(position_in, 1.0);
-	w_pos = viewPos.xyz;
+	vec4 worldPos = model * vec4(position_in, 1.0);
+	w_pos = worldPos.xyz;
 
-	gl_Position = projection * view * vec4(w_pos.xyz, 1.0f);
+	gl_Position = projection * view * worldPos;
 }

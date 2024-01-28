@@ -105,6 +105,17 @@ Eigen::Matrix4d Camera::get_view_matrix_d() const
 	return mvd_;
 }
 
+Eigen::Vector3f Camera::getCameraPosition() const {
+	if (navigation_mod_ == Mode::NAVIGATION) {
+		return this->frame_.translation().cast<float>();
+	}
+
+	Eigen::Affine3d aff =
+		Eigen::Translation3d(0.0, 0.0, -focal_dist_) * this->frame_ * Eigen::Translation3d(-pivot_point_);
+
+	return aff.translation().cast<float>();
+}
+
 void Camera::look_dir(const GLVec3& eye, const GLVec3& dir, const GLVec3& up)
 {
 	Eigen::Affine3d m = Eigen::Affine3d(Transfo::look_dir(eye, dir, up).cast<double>());

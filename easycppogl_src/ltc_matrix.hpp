@@ -1,9 +1,4 @@
-#pragma once
-
-// LTC1 is the inverse M
-// LTC2 is for (GGX norm, fresnel, 0(unused), sphere for horizon-clipping)
-
-float LTC1[] = {
+﻿const float LTC1[] = {
 	1, 0, 0, 2e-05,
 	1, 0, 0, 0.000503905,
 	1, 0, 0, 0.00201562,
@@ -4101,9 +4096,7 @@ float LTC1[] = {
 	0.982561, -0.11134, 0.0903457, 1.59982,
 	0.996389, -0.0808124, 0.0489007, 1.6577,
 };
-
-
-float LTC2[] = {
+const float LTC2[] = {
 	1, 0, 0, 0,
 	1, 7.91421e-31, 0, 0,
 	1, 1.04392e-24, 0, 0,

@@ -34,16 +34,16 @@
 
 class Viewer : public EZCOGL::GLViewer
 {
-	EZCOGL::ShaderProgram::UP s_arealight;
-	EZCOGL::MeshRenderer::UP r_arealight;
+	EZCOGL::VAO::UP vao_area_light;
+	EZCOGL::ShaderProgram::UP s_ltc;
 
-	EZCOGL::MeshRenderer::UP r_grid;
-	EZCOGL::ShaderProgram::UP s_grid;
+	EZCOGL::VAO::UP vao_plane;
+	EZCOGL::ShaderProgram::UP s_lightplane;
 
 	GLuint ltc1;
 	GLuint ltc2;
 
-	EZCOGL::GLVec3 points[4];
+	EZCOGL::GLVVec3 area_light_pos;
 
 	EZCOGL::GLVec3 specular_color;
 	EZCOGL::GLVec3 diffuse_color;
@@ -73,17 +73,17 @@ Viewer::Viewer(){
 	roughness = 0.5f;
 }
 
-unsigned int loadMTexture(float* matrixTable) {
-	unsigned int texture = 0;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_FLOAT, matrixTable);
+unsigned int loadLTC(const float* LTC) {
+	GLuint LTCTexMap;
+	glGenTextures(1, &LTCTexMap);
+	glBindTexture(GL_TEXTURE_2D, LTCTexMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_FLOAT, LTC);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	return texture;
+
+	return LTCTexMap;
 }
 
 void Viewer::init_ogl()
@@ -91,53 +91,92 @@ void Viewer::init_ogl()
 	// ***********************************
 	// Shader Programs
 	// ***********************************
-	s_arealight = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/area_lights.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/area_lights.fs")} }, "Area Lights");
-	s_grid = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.fs")} }, "Grid");
+	s_ltc = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/area_lights.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/area_lights.fs")} }, "Area Lights");
+	s_lightplane = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.fs")} }, "Grid");
 
 
 	// ***********************************
 	// Light quad renderer
 	// ***********************************
-	auto light_quad = EZCOGL::Mesh::Grid();
-	// positions (1), normals(2), tex coords (3)
-	r_arealight = light_quad->renderer(1, 2, 3, -1, -1);
-	auto vert = light_quad->vertices();
 
-	EZCOGL::GLVec3 topLeft = vert[0];
-	EZCOGL::GLVec3 topRight = vert[3];
-	EZCOGL::GLVec3 bottomLeft = vert[12];
-	EZCOGL::GLVec3 bottomRight = vert[15];
+	EZCOGL::VBO::SP vbo_p_plane = EZCOGL::VBO::create(EZCOGL::GLVVec3{
+		{-10.0f, 0.0f, -10.0f},
+		{-10.0f, 0.0f,  10.0f},
+		{10.0f, 0.0f,  10.0f},
+		{-10.0f, 0.0f, -10.0f},
+		{10.0f, 0.0f,  10.0f},
+		{10.0f, 0.0f, -10.0f},
+		});
 
-	points[0] = topLeft;
-	points[1] = topRight;
-	points[2] = bottomLeft;
-	points[3] = bottomRight;
+	EZCOGL::VBO::SP vbo_n_plane = EZCOGL::VBO::create(EZCOGL::GLVVec3{
+		{0.0f, 1.0f, 0.0f}, 
+		{0.0f, 1.0f, 0.0f},
+		{0.0f, 1.0f, 0.0f},
+		{0.0f, 1.0f, 0.0f},
+		{0.0f, 1.0f, 0.0f},
+		{0.0f, 1.0f, 0.0f},
+		});
 
-	// ***********************************
-	// Grid renderer
-	// ***********************************
-	auto grid = EZCOGL::Mesh::Grid();
-	// positions (1), normals(2), tex coords (3)
-	r_grid = grid->renderer(1, 2, 3, -1, -1);
+	EZCOGL::VBO::SP vbo_tex_plane = EZCOGL::VBO::create(EZCOGL::GLVVec2{
+		{ 0.0f, 0.0f },
+		{ 0.0f, 1.0f },
+		{ 1.0f, 1.0f },
+		{ 0.0f, 0.0f },
+		{ 1.0f, 1.0f },
+		{ 1.0f, 0.0f },
+		});
 
+	vao_plane = EZCOGL::VAO::create({ {1, vbo_p_plane} , {2, vbo_n_plane} , {3, vbo_tex_plane} });
 
+	area_light_pos = EZCOGL::GLVVec3{
+		{1.0f, 2.4f, -1.0f}, // 0 1 5 4
+		{1.0f, 2.4f,  1.0f},
+		{1.0f, 0.4f,  1.0f},
+		{1.0f, 2.4f, -1.0f},
+		{1.0f, 0.4f,  1.0f},
+		{1.0f, 0.4f, -1.0f},
+	};
+
+	EZCOGL::VBO::SP vbo_p_light = EZCOGL::VBO::create(area_light_pos);
+
+	EZCOGL::VBO::SP vbo_n_light = EZCOGL::VBO::create(EZCOGL::GLVVec3{
+		{1.0f, 0.0f, 0.0f}, 
+		{1.0f, 0.0f, 0.0f},
+		{1.0f, 0.0f, 0.0f},
+		{1.0f, 0.0f, 0.0f},
+		{1.0f, 0.0f, 0.0f},
+		{1.0f, 0.0f, 0.0f},
+		});
+
+	EZCOGL::VBO::SP vbo_tex_light = EZCOGL::VBO::create(EZCOGL::GLVVec2{
+		{ 0.0f, 0.0f },
+		{ 0.0f, 1.0f },
+		{ 1.0f, 1.0f },
+		{ 0.0f, 0.0f },
+		{ 1.0f, 1.0f },
+		{ 1.0f, 0.0f },
+		});
+
+	vao_area_light = EZCOGL::VAO::create({ {1, vbo_p_light} , {2, vbo_n_light} , {3, vbo_tex_light} });
+
+	
 	// ***********************************
 	// Textures setup
 	// ***********************************
-	ltc1 = loadMTexture(LTC1);
-	ltc2 = loadMTexture(LTC2);
 
-	// ***********************************
-	// Camera setup
-	// ***********************************
-	this->cam_.set_mode(EZCOGL::Camera::Mode::MANIPULATION);
-	this->cam_.show_entire_scene();
+	ltc1 = loadLTC(LTC1);
+	ltc2 = loadLTC(LTC2);
 
 	// set scene center and radius for the init of matrix view/proj
 	set_scene_center(EZCOGL::GLVec3(0.f, 0.f, 0.f));
 	set_scene_radius(120.f);
 
 	glEnable(GL_TEXTURE_2D);
+}
+
+void setInt(unsigned int id, const std::string& name, int value)
+{
+	glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 }
 
 void Viewer::draw_ogl()
@@ -155,7 +194,9 @@ void Viewer::draw_ogl()
 	const EZCOGL::GLMat4& view = this->get_view_matrix();
 	const EZCOGL::GLMat4& proj = this->get_projection_matrix();
 	// Construct a model matrix
-	const EZCOGL::GLMat4& model = EZCOGL::Transfo::scale(1.5f);
+	const EZCOGL::GLMat4& model = EZCOGL::GLMat4::Identity();
+
+	EZCOGL::GLVec3 camera_pos = this->cam_.getCameraPosition();
 
 	// ***********************************
 	// Light quad pass
@@ -164,43 +205,52 @@ void Viewer::draw_ogl()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
-	s_arealight->bind();
-
-	const EZCOGL::GLMat3& normalMatrix = model.block<3, 3>(0, 0);;
-
-	EZCOGL::set_uniform_value(1, model * EZCOGL::Transfo::translate(EZCOGL::GLVec3(0.f, 0.1f, 0.f)) * EZCOGL::Transfo::rotateX(90) * EZCOGL::Transfo::scale(50));
+	s_ltc->bind();
+	EZCOGL::set_uniform_value(1, model);
 	EZCOGL::set_uniform_value(2, view);
 	EZCOGL::set_uniform_value(3, proj);
-	EZCOGL::set_uniform_value(4, normalMatrix);
+	EZCOGL::set_uniform_value(4, EZCOGL::Transfo::inverse_transpose(model));
+	EZCOGL::set_uniform_value(8, intensity);
+
+	EZCOGL::set_uniform_value(9, specular_color);
+	EZCOGL::set_uniform_value(10, diffuse_color);
+	EZCOGL::set_uniform_value(11, roughness);
+
+	EZCOGL::set_uniform_value(12, area_light_pos[0]);
+	EZCOGL::set_uniform_value(13, area_light_pos[1]);
+	EZCOGL::set_uniform_value(14, area_light_pos[4]);
+	EZCOGL::set_uniform_value(15, area_light_pos[5]);
+	EZCOGL::set_uniform_value(16, camera_pos);
 
 	//Precalculated textures from original authors
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, ltc1);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, ltc2);
+	setInt(s_ltc->id(), "LTC1", 0);
+	setInt(s_ltc->id(), "LTC2", 1);
+	
+	//Draw
+	vao_plane->bind();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	vao_plane->unbind();
 
-	EZCOGL::set_uniform_value(8, EZCOGL::GLVec3(intensity, intensity, intensity));
-
-	EZCOGL::set_uniform_value(9, specular_color);
-	EZCOGL::set_uniform_value(10, specular_color);
-	EZCOGL::set_uniform_value(11, roughness);
-
-	EZCOGL::set_uniform_value(12, points[0]);
-	EZCOGL::set_uniform_value(13, points[1]);
-	EZCOGL::set_uniform_value(14, points[2]);
-	EZCOGL::set_uniform_value(15, points[3]);
-
-	r_grid->draw(GL_TRIANGLES);
 
 	// ***********************************
 	// Grid/Plane pass
 	// ***********************************
 
-	s_grid->bind();
-	EZCOGL::set_uniform_value(1, model * EZCOGL::Transfo::scale(10) * EZCOGL::Transfo::translate(EZCOGL::GLVec3(0.f, 1.5f, 0.f)));
+	s_lightplane->bind();
+	EZCOGL::set_uniform_value(1, model);
 	EZCOGL::set_uniform_value(2, view);
 	EZCOGL::set_uniform_value(3, proj);
-	r_arealight->draw(GL_TRIANGLES);
+	EZCOGL::set_uniform_value(4, intensity);
+
+	//Draw
+	vao_area_light->bind();
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	vao_area_light->unbind();
+
 }
 
 void Viewer::interface_ogl()
@@ -211,8 +261,8 @@ void Viewer::interface_ogl()
 
 	ImGui::Text("FPS :(%2.2lf)", fps_);
 	if (ImGui::Button("Reload shaders")) {
-		s_arealight = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/area_lights.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/area_lights.fs")} }, "Area Lights");
-		s_grid = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.fs")} }, "Grid");
+		s_ltc = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/area_lights.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/area_lights.fs")} }, "Area Lights");
+		s_lightplane = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.fs")} }, "Grid");
 	}
 
 	ImGui::SliderFloat("Light Intensity", &intensity, 0.f, 10.);

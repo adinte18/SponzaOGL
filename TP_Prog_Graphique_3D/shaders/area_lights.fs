@@ -9,7 +9,7 @@ in vec2 texcoord;
 
 layout (location = 1) uniform mat4 model;
 layout (location = 2) uniform mat4 view;
-layout (location = 8) uniform vec3 intensity;
+layout (location = 8) uniform float intensity;
 layout (location = 9) uniform vec3 spec_color;
 layout (location = 10) uniform vec3 diff_color;
 layout (location = 11) uniform float roughness;
@@ -18,7 +18,7 @@ layout (location = 12) uniform vec3 pt1;
 layout (location = 13) uniform vec3 pt2;
 layout (location = 14) uniform vec3 pt3;
 layout (location = 15) uniform vec3 pt4;
-
+layout (location = 16) uniform vec3 camera_pos;
 
 uniform sampler2D LTC1;
 uniform sampler2D LTC2;
@@ -27,6 +27,8 @@ const float LUT_SIZE  = 64.0; // ltc_texture size
 const float LUT_SCALE = (LUT_SIZE - 1.0)/LUT_SIZE;
 const float LUT_BIAS  = 0.5/LUT_SIZE;
 
+
+// ===================================================================================================
 
 // Vector form without project to the plane (dot with the normal)
 // Use for proxy sphere clipping
@@ -62,7 +64,6 @@ vec3 LTC_Evaluate(vec3 N, vec3 V, vec3 P, mat3 Minv, vec3 points[4], bool twoSid
 
     // polygon (allocate 4 vertices for clipping)
     vec3 L[4];
-
     // transform polygon from LTC back to origin Do (cosine weighted)
     L[0] = Minv * (points[0] - P);
     L[1] = Minv * (points[1] - P);
@@ -110,7 +111,6 @@ vec3 LTC_Evaluate(vec3 N, vec3 V, vec3 P, mat3 Minv, vec3 points[4], bool twoSid
     return Lo_i;
 }
 
-
 // PBR-maps for roughness (and metallic) are usually stored in non-linear
 // color space (sRGB), so we use these functions to convert into linear RGB.
 vec3 PowVec3(vec3 v, float p)
@@ -118,10 +118,13 @@ vec3 PowVec3(vec3 v, float p)
     return vec3(pow(v.x, p), pow(v.y, p), pow(v.z, p));
 }
 
+
 float saturate(float v)
 {
     return clamp(v, 0.0, 1.0);
 }
+
+// =================================================================================================== 
 
 
 const float gamma = 2.2;
@@ -162,9 +165,9 @@ void main()
     vec3 diff = LTC_Evaluate(N, V, P, mat3(1), pts, false);
 
     vec3 spec = LTC_Evaluate(N, V, P, Minv, pts, false);
-    spec *= ToLinear(spec_color)*t2.x + (1.0 - ToLinear(spec_color))*t2.y;
+    spec *= spec_color*t2.x + (1.0 - spec_color)*t2.y;
 
-    result = intensity*(spec + ToLinear(diff_color) * diff);
+    result = intensity*(spec + diff_color * diff);
 
 	frag_out = vec4(ToSRGB(result), 1.0f);
 }
