@@ -18,7 +18,14 @@ layout (location = 12) uniform vec3 pt1;
 layout (location = 13) uniform vec3 pt2;
 layout (location = 14) uniform vec3 pt3;
 layout (location = 15) uniform vec3 pt4;
-layout (location = 16) uniform vec3 camera_pos;
+layout (location = 17) uniform bool double_sided;
+layout (location = 18) uniform bool texture_based;
+
+layout (binding = 2) uniform sampler2D f_texture;
+layout (binding = 3) uniform sampler2D f_roughness;
+layout (binding = 4) uniform sampler2D f_displacement;
+layout (binding = 5) uniform sampler2D f_normal;
+
 
 uniform sampler2D LTC1;
 uniform sampler2D LTC2;
@@ -29,6 +36,8 @@ const float LUT_BIAS  = 0.5/LUT_SIZE;
 
 
 // ===================================================================================================
+
+/* Cette ressource a été utilisée pour certaines parties de code : https://blog.selfshadow.com/ltc/webgl/ltc_quad.html */
 
 // Vector form without project to the plane (dot with the normal)
 // Use for proxy sphere clipping
@@ -46,11 +55,6 @@ vec3 IntegrateEdgeVec(vec3 v1, vec3 v2)
     float theta_sintheta = (x > 0.0) ? v : 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - v;
 
     return cross(v1, v2)*theta_sintheta;
-}
-
-float IntegrateEdge(vec3 v1, vec3 v2)
-{
-    return IntegrateEdgeVec(v1, v2).z;
 }
 
 vec3 LTC_Evaluate(vec3 N, vec3 V, vec3 P, mat3 Minv, vec3 points[4], bool twoSided) {
@@ -117,13 +121,6 @@ vec3 PowVec3(vec3 v, float p)
 {
     return vec3(pow(v.x, p), pow(v.y, p), pow(v.z, p));
 }
-
-
-float saturate(float v)
-{
-    return clamp(v, 0.0, 1.0);
-}
-
 // =================================================================================================== 
 
 
@@ -134,6 +131,9 @@ vec3 ToSRGB(vec3 v)   { return PowVec3(v, 1.0/gamma); }
 
 void main()
 {
+
+    vec3 mDiffuse = texture(f_texture, texcoord).xyz;
+    vec4 t_roughness = texture(f_roughness, texcoord); 
 	//extraire la position de camera
 	mat4 viewModel = inverse(model * view);
 	vec3 cameraPos = vec3(viewModel[3]);
@@ -145,9 +145,14 @@ void main()
     vec3 N = normalize(w_norm);
     vec3 V = normalize(cameraPos - w_pos);
     vec3 P = w_pos;
-
-    float ndotv = saturate(dot(N, V));
-    vec2 uv = vec2(roughness, sqrt(1.0 - ndotv));
+    vec2 uv = vec2(0.0f);
+    float dotNV = clamp(dot(N, V), 0.0f, 1.0f);
+    if (texture_based){
+        uv = vec2(t_roughness.w, sqrt(1.0 - dotNV));
+    }
+    else {
+        uv = vec2(roughness, sqrt(1.0 - dotNV));
+    }
     uv = uv*LUT_SCALE + LUT_BIAS;
 
     // get 4 parameters for inverse_M
@@ -162,12 +167,13 @@ void main()
         vec3(t1.z, 0, t1.w)
     );
 
-    vec3 diff = LTC_Evaluate(N, V, P, mat3(1), pts, false);
+    vec3 diff = LTC_Evaluate(N, V, P, mat3(1), pts, double_sided);
 
-    vec3 spec = LTC_Evaluate(N, V, P, Minv, pts, false);
-    spec *= spec_color*t2.x + (1.0 - spec_color)*t2.y;
+    vec3 spec = LTC_Evaluate(N, V, P, Minv, pts, double_sided);
+    spec *= ToLinear(spec_color)*t2.x + (1.0 - ToLinear(spec_color))*t2.y;
 
-    result = intensity*(spec + diff_color * diff);
+    if (texture_based) { result = intensity*(spec + mDiffuse * diff) ; }
+    else { result = intensity * (spec + diff_color * diff) ; }
 
 	frag_out = vec4(ToSRGB(result), 1.0f);
 }

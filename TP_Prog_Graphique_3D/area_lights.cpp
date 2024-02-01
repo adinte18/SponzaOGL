@@ -34,6 +34,8 @@
 
 class Viewer : public EZCOGL::GLViewer
 {
+	EZCOGL::VBO::SP vbo_p_light;
+
 	EZCOGL::VAO::UP vao_area_light;
 	EZCOGL::ShaderProgram::UP s_ltc;
 
@@ -43,12 +45,23 @@ class Viewer : public EZCOGL::GLViewer
 	GLuint ltc1;
 	GLuint ltc2;
 
+	EZCOGL::Texture2D::SP floor_texture;
+	EZCOGL::Texture2D::SP floor_roughness;
+	EZCOGL::Texture2D::SP floor_displacement;
+	EZCOGL::Texture2D::SP floor_normals;
+
+
 	EZCOGL::GLVVec3 area_light_pos;
 
 	EZCOGL::GLVec3 specular_color;
 	EZCOGL::GLVec3 diffuse_color;
 	float intensity;
 	float roughness;
+
+	float height;
+	float width;
+	bool double_sided;
+	bool texture_based;
 
 	float s_color[3];
 	float d_color[3];
@@ -67,10 +80,23 @@ int main(int, char**)
 }
 
 Viewer::Viewer(){
+	texture_based = false;
+	height = 5.0f;
+	width = 5.0f;
+
 	intensity = 1.0f;
 	specular_color = EZCOGL::GLVec3(0.f, 0.f, 0.0f);
 	diffuse_color = EZCOGL::GLVec3(0.f, 0.f, 0.0f);
+	s_color[0] = 1.0f;
+	s_color[1] = 1.0f;
+	s_color[2] = 1.0f;
+
+	d_color[0] = 1.0f;
+	d_color[1] = 1.0f;
+	d_color[2] = 1.0f;
+
 	roughness = 0.5f;
+	double_sided = false;
 }
 
 unsigned int loadLTC(const float* LTC) {
@@ -129,15 +155,15 @@ void Viewer::init_ogl()
 	vao_plane = EZCOGL::VAO::create({ {1, vbo_p_plane} , {2, vbo_n_plane} , {3, vbo_tex_plane} });
 
 	area_light_pos = EZCOGL::GLVVec3{
-		{1.0f, 2.4f, -1.0f}, // 0 1 5 4
-		{1.0f, 2.4f,  1.0f},
+		{1.0f, 2.0, -1.0f}, // 0 1 5 4
+		{1.0f, 2.0,  1.0f},
 		{1.0f, 0.4f,  1.0f},
-		{1.0f, 2.4f, -1.0f},
+		{1.0f, 2.0, -1.0f},
 		{1.0f, 0.4f,  1.0f},
 		{1.0f, 0.4f, -1.0f},
 	};
 
-	EZCOGL::VBO::SP vbo_p_light = EZCOGL::VBO::create(area_light_pos);
+	vbo_p_light = EZCOGL::VBO::create(area_light_pos);
 
 	EZCOGL::VBO::SP vbo_n_light = EZCOGL::VBO::create(EZCOGL::GLVVec3{
 		{1.0f, 0.0f, 0.0f}, 
@@ -167,6 +193,20 @@ void Viewer::init_ogl()
 	ltc1 = loadLTC(LTC1);
 	ltc2 = loadLTC(LTC2);
 
+	floor_texture = EZCOGL::Texture2D::create();
+	floor_texture->load(DATA_PATH + "/area_light_textures/floor_tiles_06_diff_4k.jpg");
+
+	floor_roughness = EZCOGL::Texture2D::create();
+	floor_roughness->load(DATA_PATH + "/area_light_textures/floor_tiles_06_rough_4k.jpg");
+
+	floor_displacement = EZCOGL::Texture2D::create();
+	floor_displacement->load(DATA_PATH + "/area_light_textures/floor_tiles_06_disp_4k.png");
+
+	floor_normals = EZCOGL::Texture2D::create();
+	floor_normals->load(DATA_PATH + "/area_light_textures/floor_tiles_06_nor_gl_4k.exr");
+
+
+
 	// set scene center and radius for the init of matrix view/proj
 	set_scene_center(EZCOGL::GLVec3(0.f, 0.f, 0.f));
 	set_scene_radius(120.f);
@@ -179,6 +219,22 @@ void setInt(unsigned int id, const std::string& name, int value)
 	glUniform1i(glGetUniformLocation(id, name.c_str()), value);
 }
 
+EZCOGL::GLVVec3 updateAreaLightPositions(EZCOGL::VBO::SP vbo, float height, float width) {
+	EZCOGL::GLVVec3 area_light_pos = {
+		{1.0f, height, -width},
+		{1.0f, height,  width},
+		{1.0f, 0.6f,    width},
+		{1.0f, height, -width},
+		{1.0f, 0.6f,    width},
+		{1.0f, 0.6f,   -width},
+	};
+
+	// Assuming vbo_p_light is a member variable of your class
+	vbo->update(area_light_pos);
+
+	return area_light_pos;
+}
+
 void Viewer::draw_ogl()
 {
 	specular_color[0] = s_color[0];
@@ -189,6 +245,7 @@ void Viewer::draw_ogl()
 	diffuse_color[1] = d_color[1];
 	diffuse_color[2] = d_color[2];
 
+	area_light_pos = updateAreaLightPositions(vbo_p_light, height, width);
 
 	// Get the view and projection matrix
 	const EZCOGL::GLMat4& view = this->get_view_matrix();
@@ -220,8 +277,7 @@ void Viewer::draw_ogl()
 	EZCOGL::set_uniform_value(13, area_light_pos[1]);
 	EZCOGL::set_uniform_value(14, area_light_pos[4]);
 	EZCOGL::set_uniform_value(15, area_light_pos[5]);
-	EZCOGL::set_uniform_value(16, camera_pos);
-
+	EZCOGL::set_uniform_value(17, double_sided);
 	//Precalculated textures from original authors
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, ltc1);
@@ -229,7 +285,12 @@ void Viewer::draw_ogl()
 	glBindTexture(GL_TEXTURE_2D, ltc2);
 	setInt(s_ltc->id(), "LTC1", 0);
 	setInt(s_ltc->id(), "LTC2", 1);
-	
+	floor_texture->bind(2);
+	floor_roughness->bind(3);
+	floor_displacement->bind(4);
+	floor_normals->bind(5);
+	EZCOGL::set_uniform_value(18, texture_based);
+
 	//Draw
 	vao_plane->bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -256,6 +317,10 @@ void Viewer::draw_ogl()
 void Viewer::interface_ogl()
 {
 	ImGui::GetIO().FontGlobalScale = 1.0f;
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+
+
 	ImGui::Begin("Area lights - LTC", nullptr, ImGuiWindowFlags_NoSavedSettings);
 	ImGui::SetWindowSize({ 0,0 });
 
@@ -265,19 +330,22 @@ void Viewer::interface_ogl()
 		s_lightplane = EZCOGL::ShaderProgram::create({ {GL_VERTEX_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.vs")}, {GL_FRAGMENT_SHADER, EZCOGL::load_src(SHADERS_PATH + "/grid.fs")} }, "Grid");
 	}
 
-	ImGui::SliderFloat("Light Intensity", &intensity, 0.f, 10.);
+	ImGui::SliderFloat("Light Intensity", &intensity, 0.f, 10.f);
+
 	ImGui::SliderFloat("Roughness", &roughness, 0.f, 1.f);
+	ImGui::Checkbox("Texture-based roughness", &texture_based);
 
-	ImGui::ColorPicker3("Specular color", s_color);
-	ImGui::ColorPicker3("Diffuse color", d_color);
+	ImGui::SliderFloat("Height", &height, 1.f, 20.);
+	ImGui::SliderFloat("Width", &width, 1.f, 20.f);
+	ImGui::Checkbox("Double-sided", &double_sided);
 
-	if (ImGui::CollapsingHeader("LTC1 texture content")){
-		ImVec2 imageSize(200.0f, 200.0f);
-		ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(ltc1)), imageSize);
+
+	if (ImGui::CollapsingHeader("Specular color picker")) {
+		ImGui::ColorPicker3("Specular color", s_color);
 	}
-	if (ImGui::CollapsingHeader("LTC2 texture content")) {
-		ImVec2 imageSize(200.0f, 200.0f);
-		ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(ltc2)), imageSize);
+
+	if (ImGui::CollapsingHeader("Diffuse color picker")) {
+		ImGui::ColorPicker3("Diffuse color", d_color);
 	}
 
 	ImGui::End();
